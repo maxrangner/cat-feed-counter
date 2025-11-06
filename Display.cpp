@@ -21,6 +21,10 @@ const uint16_t SCREEN_ROTATION = 1;
 const uint16_t SCREEN_WIDTH = 320;
 const uint16_t SCREEN_HEIGHT = 172;
 
+// VARIABLES
+String animals[3] = {"cat", "dog", "lizzard"};
+int animalChosen = 1;
+
 Display::Display(Counter& Counter) : tft(TFT_CS, TFT_DC, TFT_RST), connectedCounter(&Counter) {
   // SCREEN SETUP
   SPI.begin(TFT_SCLK, -1, TFT_MOSI);
@@ -36,6 +40,10 @@ Display::Display(Counter& Counter) : tft(TFT_CS, TFT_DC, TFT_RST), connectedCoun
 
 void Display::switchScreen() {
   currentMenu = static_cast<MenuScreen>((static_cast<int>(currentMenu) + 1) % 3);
+}
+
+const MenuScreen& Display::getScreen() const {
+  return currentMenu;
 }
 
 void Display::mainScreen() {
@@ -69,9 +77,14 @@ void Display::statsScreen() {
   tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
 }
 
+void Display::switchAnimal() {
+  Serial.print("switch animal");
+  animalChosen = (animalChosen + 1) % 3; 
+}
+
 void Display::settingsScreen() {
   GFXcanvas16 canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
-
+  
   canvas.fillScreen(ST77XX_WHITE);
   canvas.setTextColor(ST77XX_BLACK);
   canvas.setFont(&Comfortaa_Regular12pt7b);
@@ -79,7 +92,7 @@ void Display::settingsScreen() {
   canvas.print("Settings:");
   canvas.setFont(&Comfortaa_Regular20pt7b);
   canvas.setCursor(20, 80);
-  canvas.print("Animal: cat");
+  canvas.print(animals[animalChosen]);
   tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
 }
 

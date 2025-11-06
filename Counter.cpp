@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "Counter.h"
 
 int Counter::getCount() const {
@@ -5,6 +6,7 @@ int Counter::getCount() const {
 }
 
 void Counter::increment() {
+  Serial.print("increment\n");
   counter++;
   limiter();
 }

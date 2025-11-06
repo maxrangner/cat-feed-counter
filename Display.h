@@ -21,6 +21,8 @@ public:
   Display(Counter& Counter);
   // GETTERS / SETTERS
   void switchScreen();
+  const MenuScreen& getScreen() const;
+  void switchAnimal();
 
   // DRAW
   void drawScreen();

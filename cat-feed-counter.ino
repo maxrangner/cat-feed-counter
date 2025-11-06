@@ -14,11 +14,15 @@ void loop() {
   static Button BuiltInButton(9, 50, true);
 
   BuiltInButton.update();
+
   if (BuiltInButton.wasPressed()) {
-    Counter.increment();
+    switch (Display.getScreen()) {
+      case MenuScreen::mainScreen: Counter.increment(); break;
+      case MenuScreen::statsScreen: break;
+      case MenuScreen::settingsScreen: Display.switchAnimal(); break;
+    }
   }
   if (BuiltInButton.wasHeld()) {
-    // Counter.reset();
     Display.switchScreen();
   }
   Display.drawScreen();
