@@ -1,9 +1,18 @@
 #include "Counter.h"
 
-int Counter::getCounter() const {
+int Counter::getCount() const {
   return counter;
 }
 
-void Counter::addCount() {
+void Counter::increment() {
   counter++;
+  limiter();
+}
+
+void Counter::reset() {
+  counter = 0;
+}
+
+void Counter::limiter() {
+  if (counter >= 10) counter = 0;
 }

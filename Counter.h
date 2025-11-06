@@ -3,6 +3,8 @@
 class Counter {
   int counter;
 public:
-  int getCounter() const;
-  void addCount();
+  int getCount() const;
+  void increment();
+  void reset();
+  void limiter();
 };
