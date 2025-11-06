@@ -1,6 +1,6 @@
 #pragma once
 #include <Adafruit_ST7789.h>
-#include "Counter.h"
+#include "SystemManager.h"
 
 enum class MenuScreen {
   mainScreen,
@@ -10,7 +10,7 @@ enum class MenuScreen {
 
 class Display {
   Adafruit_ST7789 tft;
-  Counter* connectedCounter;
+  SystemManager* connectedMgr;
   uint16_t tempCounter;
   MenuScreen currentMenu;
   // MENU
@@ -18,7 +18,7 @@ class Display {
   void statsScreen();
   void settingsScreen();
 public:
-  Display(Counter& Counter);
+  Display(SystemManager& SysMgr);
   // GETTERS / SETTERS
   void switchScreen();
   const MenuScreen& getScreen() const;

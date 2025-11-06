@@ -25,7 +25,7 @@ const uint16_t SCREEN_HEIGHT = 172;
 String animals[3] = {"cat", "dog", "lizzard"};
 int animalChosen = 1;
 
-Display::Display(Counter& Counter) : tft(TFT_CS, TFT_DC, TFT_RST), connectedCounter(&Counter) {
+Display::Display(SystemManager& SysMgr) : tft(TFT_CS, TFT_DC, TFT_RST), connectedMgr(&SysMgr) {
   // SCREEN SETUP
   SPI.begin(TFT_SCLK, -1, TFT_MOSI);
   pinMode(TFT_BL, OUTPUT);
@@ -56,10 +56,12 @@ void Display::mainScreen() {
   canvas.print("Previous:");
   canvas.setFont(&Comfortaa_Regular20pt7b);
   canvas.setCursor(20, 80);
-  canvas.print("12:56");
+  if (!connectedMgr->feedTimesIsEmpty()) {
+    canvas.print(static_cast<int>(connectedMgr->getLastFeedTime()));
+  }
   canvas.setFont(&Heavitas70pt7b);
   canvas.setCursor(200, 135);
-  canvas.print(connectedCounter->getCount());
+  canvas.print(connectedMgr->getCount());
   tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
 }
 
@@ -73,12 +75,12 @@ void Display::statsScreen() {
   canvas.print("Stats:");
   canvas.setFont(&Comfortaa_Regular20pt7b);
   canvas.setCursor(20, 80);
-  canvas.print("1001 meals total");
+  canvas.print("1001 meals tot");
   tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
 }
 
 void Display::switchAnimal() {
-  Serial.print("switch animal");
+  Serial.println("switch animal");
   animalChosen = (animalChosen + 1) % 3; 
 }
 
