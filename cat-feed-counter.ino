@@ -2,10 +2,9 @@
 #include "SystemManager.h"
 #include "Button.h"
 #include "Display.h"
+#include "definitions.h"
 
-const int gmtOffset_sec = 3600;
-const int daylightOffset_sec = 3600;
-const char* ntpServer = "pool.ntp.org";
+
 
 void setup() {
   Serial.begin(9600);

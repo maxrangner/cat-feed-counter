@@ -3,6 +3,8 @@
 #include <Adafruit_GFX.h>
 #include <string>
 #include "Display.h"
+#include "utils.h"
+#include "definitions.h"
 #include "fonts/Heavitas70pt7b.h"
 #include "fonts/Comfortaa_Regular12pt7b.h"
 #include "fonts/Comfortaa_Regular20pt7b.h"
@@ -51,14 +53,25 @@ void Display::mainScreen() {
 
   canvas.fillScreen(ST77XX_WHITE);
   canvas.setTextColor(ST77XX_BLACK);
-  canvas.setFont(&Comfortaa_Regular12pt7b);
-  canvas.setCursor(20, 30);
-  canvas.print("Previous:");
-  canvas.setFont(&Comfortaa_Regular20pt7b);
-  canvas.setCursor(20, 80);
+
+  // LAST FEED INFO
   if (!connectedMgr->feedTimesIsEmpty()) {
-    canvas.print(static_cast<int>(connectedMgr->getLastFeedTime()));
+    canvas.setFont(&Comfortaa_Regular12pt7b);
+    canvas.setCursor(20, 40);
+    canvas.print("Previous:");
+
+    canvas.setFont(&Comfortaa_Regular20pt7b);
+    canvas.setCursor(20, 90);
+    String feedTime = convertTime(connectedMgr->getLastFeedTime());
+    canvas.print(feedTime);
+    
+    canvas.setCursor(20, 140);
+    time_t now = connectedMgr->getTime();
+    time_t lastFeed = connectedMgr->getLastFeedTime();
+    canvas.print(convertTime(now-lastFeed-daylightOffset_sec));
   }
+
+  // CURRENT FEEDS
   canvas.setFont(&Heavitas70pt7b);
   canvas.setCursor(200, 135);
   canvas.print(connectedMgr->getCount());
