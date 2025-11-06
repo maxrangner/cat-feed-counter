@@ -17,6 +17,7 @@
 #define TFT_DC    15   // LCD_DC
 #define TFT_RST   21   // LCD_RST
 #define TFT_BL    22   // LCD_BL (backlight)
+#define SCREEN_UPDATE_RATE 50
 
 // CONSTS
 const uint16_t SCREEN_ROTATION = 1;
@@ -37,6 +38,7 @@ Display::Display(SystemManager& SysMgr) : tft(TFT_CS, TFT_DC, TFT_RST), connecte
   tft.fillScreen(ST77XX_WHITE);
   // VARIABLES
   tempCounter = 0;
+  prevScreenUpdate = 0;
   currentMenu = MenuScreen::mainScreen;
 }
 
@@ -44,7 +46,7 @@ void Display::switchScreen() {
   currentMenu = static_cast<MenuScreen>((static_cast<int>(currentMenu) + 1) % 3);
 }
 
-const MenuScreen& Display::getScreen() const {
+const MenuScreen& Display::getCurrentScreen() const {
   return currentMenu;
 }
 
@@ -112,10 +114,15 @@ void Display::settingsScreen() {
 }
 
 void Display::drawScreen() {
-  switch (currentMenu) {
-    case MenuScreen::mainScreen: mainScreen(); break;
-    case MenuScreen::statsScreen: statsScreen(); break;
-    case MenuScreen::settingsScreen: settingsScreen(); break;
+  unsigned long now = millis();
+  if (now - prevScreenUpdate >= SCREEN_UPDATE_RATE) {
+    switch (currentMenu) {
+      case MenuScreen::mainScreen: mainScreen(); break;
+      case MenuScreen::statsScreen: statsScreen(); break;
+      case MenuScreen::settingsScreen: settingsScreen(); break;
+    }
+    prevScreenUpdate = now;
   }
+  Serial.println(now);
 }
 

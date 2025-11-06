@@ -12,6 +12,7 @@ class Display {
   Adafruit_ST7789 tft;
   SystemManager* connectedMgr;
   uint16_t tempCounter;
+  unsigned long prevScreenUpdate;
   MenuScreen currentMenu;
   // MENU
   void mainScreen();
@@ -21,7 +22,7 @@ public:
   Display(SystemManager& SysMgr);
   // GETTERS / SETTERS
   void switchScreen();
-  const MenuScreen& getScreen() const;
+  const MenuScreen& getCurrentScreen() const;
   void switchAnimal();
 
   // DRAW

@@ -20,9 +20,8 @@ void loop() {
   static Button BuiltInButton(9, 50, true);
 
   BuiltInButton.update();
-
   if (BuiltInButton.wasPressed()) {
-    switch (Display.getScreen()) {
+    switch (Display.getCurrentScreen()) {
       case MenuScreen::mainScreen: SysMgr.increment(); break;
       case MenuScreen::statsScreen: break;
       case MenuScreen::settingsScreen: Display.switchAnimal(); break;
@@ -31,5 +30,6 @@ void loop() {
   if (BuiltInButton.wasHeld()) {
     Display.switchScreen();
   }
+
   Display.drawScreen();
 }
