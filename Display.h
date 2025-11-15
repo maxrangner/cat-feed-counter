@@ -1,6 +1,7 @@
 #pragma once
 #include <Adafruit_ST7789.h>
-#include "SystemManager.h"
+
+class SystemManager;
 
 enum class MenuScreen {
   mainScreen,
@@ -24,6 +25,7 @@ public:
   void switchScreen();
   const MenuScreen& getCurrentScreen() const;
   void switchAnimal();
+  void displayMessage(uint16_t x = 0, uint16_t y = 0, String message = "");
 
   // DRAW
   void drawScreen();

@@ -4,7 +4,7 @@
 #include "Display.h"
 #include "definitions.h"
 
-
+bool firstRun = true;
 
 void setup() {
   Serial.begin(9600);
@@ -18,7 +18,7 @@ void loop() {
   static SystemManager SysMgr;
   static Display Display(SysMgr);
   static Button BuiltInButton(9, 50, true);
-
+  if (firstRun) SysMgr.setup(Display);
   BuiltInButton.update();
   if (BuiltInButton.wasPressed()) {
     switch (Display.getCurrentScreen()) {
@@ -30,6 +30,6 @@ void loop() {
   if (BuiltInButton.wasHeld()) {
     Display.switchScreen();
   }
-
+  firstRun = false;
   Display.drawScreen();
 }

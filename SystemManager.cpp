@@ -1,10 +1,19 @@
 #include <Arduino.h>
 #include "time.h"
 #include "SystemManager.h"
+#include "Display.h"
 
 SystemManager::SystemManager() {
+}
+
+void SystemManager::setup(Display& disp) {
   wifi.setup();
   counter = 0;
+
+  while (time(nullptr) <= 1000) {
+    disp.displayMessage(15, 90, "Syncing time...");
+    delay(10000);
+  }
 }
 
 // GETTERS

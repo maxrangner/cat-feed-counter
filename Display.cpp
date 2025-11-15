@@ -3,6 +3,7 @@
 #include <Adafruit_GFX.h>
 #include <string>
 #include "Display.h"
+#include "SystemManager.h"
 #include "utils.h"
 #include "definitions.h"
 #include "fonts/Heavitas70pt7b.h"
@@ -110,6 +111,17 @@ void Display::settingsScreen() {
   canvas.setFont(&Comfortaa_Regular20pt7b);
   canvas.setCursor(20, 80);
   canvas.print(animals[animalChosen]);
+  tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
+}
+
+void Display::displayMessage(uint16_t x, uint16_t y, String message) {
+  GFXcanvas16 canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+  
+  canvas.fillScreen(ST77XX_WHITE);
+  canvas.setTextColor(ST77XX_BLACK);
+  canvas.setFont(&Comfortaa_Regular20pt7b);
+  canvas.setCursor(x, y);
+  canvas.print(message);
   tft.drawRGBBitmap(0, 0, canvas.getBuffer(), canvas.width(), canvas.height());
 }
 

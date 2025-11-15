@@ -11,7 +11,7 @@ Button::Button(uint8_t pin, int setDebounce, bool hasPullup) : pin_(pin), deboun
     buttonState = digitalRead(pin_);
     prevButtonState = buttonState;
   }
-  prevTime = 0;
+  // prevTime = 0;
   buttonHeldTimer = 0;
   now = millis();
   holdThreashold = 300;
@@ -21,8 +21,8 @@ Button::Button(uint8_t pin, int setDebounce, bool hasPullup) : pin_(pin), deboun
 
 bool Button::isDebounced() {
   if (buttonState != prevButtonState) {
-    if (now - prevTime >= debounce) {
-      prevTime = now;
+    if (now >= nextDebounce) {
+      nextDebounce = now + debounce;
       return true;
     }
   }

@@ -12,8 +12,7 @@ void WiFiManager::setup() {
   status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.println(WiFi.status());
     Serial.print(".");
   }
-  Serial.print("\nYou're connected to the network");
+  Serial.println("\nYou're connected to the network");
 }
