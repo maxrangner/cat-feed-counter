@@ -18,8 +18,10 @@ void loop() {
   static SystemManager SysMgr;
   static Display Display(SysMgr);
   static Button BuiltInButton(9, 50, true);
+
   if (firstRun) SysMgr.setup(Display);
   BuiltInButton.update();
+  
   if (BuiltInButton.wasPressed()) {
     switch (Display.getCurrentScreen()) {
       case MenuScreen::mainScreen: SysMgr.increment(); break;
@@ -28,8 +30,13 @@ void loop() {
     }
   }
   if (BuiltInButton.wasHeld()) {
+    // SysMgr.resetDay();
+    // SysMgr.printAllStats();
+    SysMgr.previousDay = SysMgr.previousDay - 86400;
     Display.switchScreen();
   }
+
   firstRun = false;
+  SysMgr.checkDay();
   Display.drawScreen();
 }

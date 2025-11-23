@@ -69,7 +69,7 @@ void Display::mainScreen() {
     canvas.print(feedTime);
     
     canvas.setCursor(20, 140);
-    time_t now = connectedMgr->getTime();
+    time_t now = getTime();
     time_t lastFeed = connectedMgr->getLastFeedTime();
     canvas.print(convertTime(now-lastFeed-daylightOffset_sec));
   }
@@ -135,6 +135,5 @@ void Display::drawScreen() {
     }
     prevScreenUpdate = now;
   }
-  Serial.println(now);
 }
 
