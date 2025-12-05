@@ -25,7 +25,7 @@ void DayStats::printStats() {
   int count = 0;
   for (auto& t : feeds) {
     Serial.print(count++);
-    Serial.print(": ")
+    Serial.print(": ");
     Serial.println(t);
   }
   Serial.println("*-----------*");

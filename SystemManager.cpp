@@ -24,7 +24,7 @@ int SystemManager::getCount() const {
 }
 
 const bool SystemManager::feedTimesIsEmpty() const {
-  return (feedTimes.empty()) ? true : false;
+  return feedTimes.empty();
 }
 
 const time_t& SystemManager::getLastFeedTime() const {
@@ -42,7 +42,7 @@ void SystemManager::increment() {
 }
 
 void SystemManager::resetDay() {
-  Serial.println("ResetDady()");
+  Serial.println("ResetDay()");
   counter = 0;
   DayStats newStats;
   

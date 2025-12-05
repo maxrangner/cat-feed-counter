@@ -4,22 +4,20 @@
 #include "Display.h"
 #include "definitions.h"
 
-bool firstRun = true;
+SystemManager SysMgr;
+Display Display(SysMgr);
+Button BuiltInButton(9, 50, true);
 
 void setup() {
   Serial.begin(9600);
   while(!Serial) delay(10);
   Serial.print("Boot!\n");
+  SysMgr.setup(Display);
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 }
 
 void loop() {
-  static SystemManager SysMgr;
-  static Display Display(SysMgr);
-  static Button BuiltInButton(9, 50, true);
-
-  if (firstRun) SysMgr.setup(Display);
   BuiltInButton.update();
   
   if (BuiltInButton.wasPressed()) {
@@ -36,7 +34,6 @@ void loop() {
     Display.switchScreen();
   }
 
-  firstRun = false;
   SysMgr.checkDay();
   Display.drawScreen();
 }
