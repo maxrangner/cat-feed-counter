@@ -12,9 +12,9 @@ void SystemManager::setup(Display& disp) {
   counter = 0;
   previousDay = getTime();
 
-  while (time(nullptr) <= 1000) {
+  while (time(nullptr) <= 1000) { // If time not synced properly it returns 0, but checking for <= 1000 gives some margin.
     disp.displayMessage(15, 90, "Syncing time...");
-    delay(10000);
+    delay(1000);
   }
 }
 
@@ -24,37 +24,35 @@ int SystemManager::getCount() const {
 }
 
 const bool SystemManager::feedTimesIsEmpty() const {
-  return feedTimes.empty();
+  if (feedTimesArray[0] == 0) return true;
+  return false;
 }
 
 const time_t& SystemManager::getLastFeedTime() const {
-  return feedTimesCurrentDay.back();
+  return feedTimesArray[counter-1];
 }
 
 // CORE
 void SystemManager::increment() {
-  Serial.println("increment");
-  counter++;
+  Serial.println("Increment counter.");
+  feedTimesArray[counter++] = time(nullptr);
   limiter();
-  time_t now = time(nullptr);
-  feedTimes.push_back(now);
-  feedTimesCurrentDay.push_back(now);
 }
 
 void SystemManager::resetDay() {
   Serial.println("ResetDay()");
-  counter = 0;
-  DayStats newStats;
+  // counter = 0;
+  // DayStats newStats;
   
-  if (!feedTimesCurrentDay.empty()) {
-    time_t newDay = feedTimesCurrentDay[0];
-    newStats.setDay(newDay);
-    newStats.addFeeds(feedTimesCurrentDay);
-    statistics.push_back(newStats);
-    previousDay = getTime();
-    printAllStats();
-  }
-  feedTimesCurrentDay.clear();
+  // if (!feedTimesCurrentDay.empty()) {
+  //   time_t newDay = feedTimesCurrentDay[0];
+  //   newStats.setDay(newDay);
+  //   newStats.addFeeds(feedTimesCurrentDay);
+  //   statistics.push_back(newStats);
+  //   previousDay = getTime();
+  //   printAllStats();
+  // }
+  // feedTimesCurrentDay.clear();
 }
 
 // UTILS
@@ -69,13 +67,13 @@ void SystemManager::checkDay() {
   // Serial.print("previousDay: ");
   // Serial.println(getConvertedDay(previousDay));
 
-  if (getConvertedDay(now) != getConvertedDay(previousDay)) {
-    resetDay();
-  }
+  // if (getConvertedDay(now) != getConvertedDay(previousDay)) {
+  //   resetDay();
+  // }
 }
 
 void SystemManager::printAllStats() {
-  for (auto& s : statistics) {
-    s.printStats();
-  }
+  // for (auto& s : statistics) {
+  //   s.printStats();
+  // }
 }

@@ -1,17 +1,14 @@
 #pragma once
-#include <vector>
 #include "time.h"
-#include "WiFiManager.h"
+#include "src/WiFiManager.h"
 #include "DayStats.h"
 
 class Display;
 
 class SystemManager {
   WiFiManager wifi;
-  int counter;
-  std::vector<time_t> feedTimes;
-  std::vector<time_t> feedTimesCurrentDay;
-  std::vector<DayStats> statistics;
+  uint8_t counter;
+  time_t feedTimesArray[9] = {0};
 public:
   time_t previousDay;
 

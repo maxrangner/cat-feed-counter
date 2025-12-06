@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <string>
 #include "Display.h"
 #include "SystemManager.h"
 #include "utils.h"

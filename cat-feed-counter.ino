@@ -18,7 +18,7 @@ void setup() {
 }
 
 void loop() {
-  BuiltInButton.update();
+  updateButtons();
   
   if (BuiltInButton.wasPressed()) {
     switch (Display.getCurrentScreen()) {
@@ -28,12 +28,13 @@ void loop() {
     }
   }
   if (BuiltInButton.wasHeld()) {
-    // SysMgr.resetDay();
-    // SysMgr.printAllStats();
-    SysMgr.previousDay = SysMgr.previousDay - 86400;
     Display.switchScreen();
   }
 
   SysMgr.checkDay();
   Display.drawScreen();
+}
+
+void updateButtons() {
+  BuiltInButton.update();
 }
