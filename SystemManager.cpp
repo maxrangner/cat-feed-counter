@@ -4,17 +4,15 @@
 #include "Display.h"
 #include "utils.h"
 
-SystemManager::SystemManager() {
+SystemManager::SystemManager() : counter(0) {
 }
 
 void SystemManager::setup(Display& disp) {
   wifi.setup();
-  counter = 0;
-  previousDay = getTime();
 
-  while (time(nullptr) <= 1000) {
+  while (time(nullptr) <= 1000) { // If time not synced properly it returns 0, but checking for <= 1000 gives some margin.
     disp.displayMessage(15, 90, "Syncing time...");
-    delay(10000);
+    delay(1000);
   }
 }
 
@@ -24,37 +22,49 @@ int SystemManager::getCount() const {
 }
 
 const bool SystemManager::feedTimesIsEmpty() const {
-  return feedTimes.empty();
+  if (feedTimes[0] == 0) return true;
+  return false;
 }
 
 const time_t& SystemManager::getLastFeedTime() const {
-  return feedTimesCurrentDay.back();
+  // if (counter == 0) return 0;
+  // return feedTimes[counter - 1]; // Dangerous out of bounds risk
+  return feedTimes[0];
 }
 
 // CORE
 void SystemManager::increment() {
-  Serial.println("increment");
+  feedTimes[counter] = getTime();
+  Serial.print("counter: "); Serial.print(counter);
+  Serial.println(" Increment counter.");
   counter++;
-  limiter();
-  time_t now = time(nullptr);
-  feedTimes.push_back(now);
-  feedTimesCurrentDay.push_back(now);
+  this->limiter();
+  this->printFeedTimes();
 }
 
 void SystemManager::resetDay() {
   Serial.println("ResetDay()");
+  this->updatePreviousFeedTimes();
+  this->printPreviousFeedTimes();
+  this->resetFeedTimes();
   counter = 0;
-  DayStats newStats;
-  
-  if (!feedTimesCurrentDay.empty()) {
-    time_t newDay = feedTimesCurrentDay[0];
-    newStats.setDay(newDay);
-    newStats.addFeeds(feedTimesCurrentDay);
-    statistics.push_back(newStats);
-    previousDay = getTime();
-    printAllStats();
+}
+
+void SystemManager::resetFeedTimes() {
+  for (auto& t : feedTimes) {
+    t = 0;
   }
-  feedTimesCurrentDay.clear();
+}
+
+void SystemManager::updatePreviousFeedTimes() {
+  for (int day = 0; day < (DAYS_SAVED - 1); day++) {
+    for (int time = 0; time < MAX_FEEDS; time++) {
+      previousFeedTimes[day][time] = previousFeedTimes[day + 1][time];
+    }
+  }
+  for (int time = 0; time < MAX_FEEDS; time++) {
+    previousFeedTimes[DAYS_SAVED - 1][time] = feedTimes[time];
+  }
 }
 
 // UTILS
@@ -69,13 +79,25 @@ void SystemManager::checkDay() {
   // Serial.print("previousDay: ");
   // Serial.println(getConvertedDay(previousDay));
 
-  if (getConvertedDay(now) != getConvertedDay(previousDay)) {
-    resetDay();
-  }
+  // if (getConvertedDay(now) != getConvertedDay(previousDay)) {
+  //   this->resetDay();
+  // }
 }
 
-void SystemManager::printAllStats() {
-  for (auto& s : statistics) {
-    s.printStats();
+void SystemManager::printFeedTimes() {
+  for (auto& t : feedTimes) {
+    Serial.print(t); Serial.print("   ");
+  }
+  Serial.println(" ");
+}
+
+void SystemManager::printPreviousFeedTimes() {
+  int day = 0;
+  for (auto& d : previousFeedTimes) {
+    Serial.print(day++); Serial.print(": ");
+    for (auto& t : d) {
+      Serial.print(t); Serial.print("  ");
+    }
+    Serial.println(" ");
   }
 }

@@ -1,20 +1,17 @@
 #pragma once
-#include <vector>
 #include "time.h"
-#include "WiFiManager.h"
-#include "DayStats.h"
+#include "src/WiFiManager.h"
+#include "DayStats.h" 
+#include "definitions.h"
 
 class Display;
 
 class SystemManager {
   WiFiManager wifi;
-  int counter;
-  std::vector<time_t> feedTimes;
-  std::vector<time_t> feedTimesCurrentDay;
-  std::vector<DayStats> statistics;
+  uint8_t counter;
+  time_t feedTimes[MAX_FEEDS] = {0};
+  time_t previousFeedTimes[DAYS_SAVED][MAX_FEEDS]; // 30 days
 public:
-  time_t previousDay;
-
   SystemManager();
   void setup(Display& disp);
   
@@ -26,9 +23,12 @@ public:
   // CORE
   void increment();
   void resetDay();
+  void resetFeedTimes();
+  void updatePreviousFeedTimes();
 
   // UTILS
   void limiter();
   void checkDay();
-  void printAllStats();
+  void printFeedTimes();
+  void printPreviousFeedTimes();
 };

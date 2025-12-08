@@ -1,16 +1,11 @@
 #pragma once
-#include <vector>
 #include "time.h"
+#include "definitions.h"
 
 class DayStats {
-  int day;
-  std::vector<time_t> feeds;
+  time_t feeds[MAX_FEEDS];
 public:
-  const int getDay() const;
   const int getNumFeeds() const;
-
-  void setDay(time_t timestamp);
-  void addFeeds(std::vector<time_t>& dayFeeds);
-
+  void addFeeds(time_t (&dayFeeds)[MAX_FEEDS]);
   void printStats();
 };

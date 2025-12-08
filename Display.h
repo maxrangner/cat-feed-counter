@@ -21,6 +21,7 @@ class Display {
   void settingsScreen();
 public:
   Display(SystemManager& SysMgr);
+  void tftInit();
   // GETTERS / SETTERS
   void switchScreen();
   const MenuScreen& getCurrentScreen() const;

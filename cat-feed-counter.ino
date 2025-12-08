@@ -10,16 +10,16 @@ Button BuiltInButton(9, 50, true);
 
 void setup() {
   Serial.begin(9600);
-  while(!Serial) delay(10);
+  // while(!Serial) delay(10);
+  delay(1000);
   Serial.print("Boot!\n");
-  SysMgr.setup(Display);
-
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  Display.tftInit();
+  SysMgr.setup(Display);
 }
 
 void loop() {
-  BuiltInButton.update();
-  
+  updateButtons();
   if (BuiltInButton.wasPressed()) {
     switch (Display.getCurrentScreen()) {
       case MenuScreen::mainScreen: SysMgr.increment(); break;
@@ -28,12 +28,14 @@ void loop() {
     }
   }
   if (BuiltInButton.wasHeld()) {
-    // SysMgr.resetDay();
-    // SysMgr.printAllStats();
-    SysMgr.previousDay = SysMgr.previousDay - 86400;
-    Display.switchScreen();
+    SysMgr.resetDay();
+    // Display.switchScreen();
   }
 
   SysMgr.checkDay();
   Display.drawScreen();
+}
+
+void updateButtons() {
+  BuiltInButton.update();
 }

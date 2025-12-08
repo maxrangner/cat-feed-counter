@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <string>
 #include "Display.h"
 #include "SystemManager.h"
 #include "utils.h"
@@ -30,17 +29,18 @@ String animals[3] = {"cat", "dog", "lizzard"};
 int animalChosen = 1;
 
 Display::Display(SystemManager& SysMgr) : tft(TFT_CS, TFT_DC, TFT_RST), connectedMgr(&SysMgr) {
-  // SCREEN SETUP
-  SPI.begin(TFT_SCLK, -1, TFT_MOSI);
-  pinMode(TFT_BL, OUTPUT);
-  digitalWrite(TFT_BL, HIGH);  // Tänd bakgrundsbelysningen
-  tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
-  tft.setRotation(SCREEN_ROTATION);
-  tft.fillScreen(ST77XX_WHITE);
-  // VARIABLES
   tempCounter = 0;
   prevScreenUpdate = 0;
   currentMenu = MenuScreen::mainScreen;
+}
+
+void Display::tftInit() {
+  pinMode(TFT_BL, OUTPUT);
+  digitalWrite(TFT_BL, HIGH);  // Tänd bakgrundsbelysningen
+  SPI.begin(TFT_SCLK, -1, TFT_MOSI);
+  tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
+  tft.setRotation(SCREEN_ROTATION);
+  tft.fillScreen(ST77XX_WHITE);
 }
 
 void Display::switchScreen() {
@@ -70,8 +70,10 @@ void Display::mainScreen() {
     
     canvas.setCursor(20, 140);
     time_t now = getTime();
-    time_t lastFeed = connectedMgr->getLastFeedTime();
-    canvas.print(convertTime(now-lastFeed-daylightOffset_sec));
+    if (!connectedMgr->feedTimesIsEmpty()) {
+      time_t lastFeed = connectedMgr->getLastFeedTime();
+      canvas.print(convertTime(now-lastFeed-daylightOffset_sec));
+    }
   }
 
   // CURRENT FEEDS
