@@ -28,7 +28,8 @@ void loop() {
     }
   }
   if (BuiltInButton.wasHeld()) {
-    Display.switchScreen();
+    SysMgr.resetDay();
+    // Display.switchScreen();
   }
 
   SysMgr.checkDay();

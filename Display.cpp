@@ -17,7 +17,7 @@
 #define TFT_DC    15   // LCD_DC
 #define TFT_RST   21   // LCD_RST
 #define TFT_BL    22   // LCD_BL (backlight)
-#define SCREEN_UPDATE_RATE 150
+#define SCREEN_UPDATE_RATE 50
 
 // CONSTS
 const uint16_t SCREEN_ROTATION = 1;

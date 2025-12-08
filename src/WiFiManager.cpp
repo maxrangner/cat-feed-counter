@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "WiFi.h"
-#include "WiFiManager.h"
+#include "src/WiFiManager.h"
 #include "src/credentials.h"
 
 WiFiManager::WiFiManager() : status(WL_DISCONNECTED) {

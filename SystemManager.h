@@ -1,7 +1,7 @@
 #pragma once
 #include "time.h"
 #include "src/WiFiManager.h"
-#include "DayStats.h"
+#include "DayStats.h" 
 #include "definitions.h"
 
 class Display;
@@ -10,6 +10,7 @@ class SystemManager {
   WiFiManager wifi;
   uint8_t counter;
   time_t feedTimes[MAX_FEEDS] = {0};
+  time_t previousFeedTimes[DAYS_SAVED][MAX_FEEDS]; // 30 days
 public:
   SystemManager();
   void setup(Display& disp);
@@ -22,9 +23,12 @@ public:
   // CORE
   void increment();
   void resetDay();
+  void resetFeedTimes();
+  void updatePreviousFeedTimes();
 
   // UTILS
   void limiter();
   void checkDay();
-  void printAllStats();
+  void printFeedTimes();
+  void printPreviousFeedTimes();
 };
