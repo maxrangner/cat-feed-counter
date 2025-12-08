@@ -10,16 +10,16 @@ Button BuiltInButton(9, 50, true);
 
 void setup() {
   Serial.begin(9600);
-  while(!Serial) delay(10);
+  // while(!Serial) delay(10);
+  delay(1000);
   Serial.print("Boot!\n");
-  SysMgr.setup(Display);
-
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  Display.tftInit();
+  SysMgr.setup(Display);
 }
 
 void loop() {
   updateButtons();
-  
   if (BuiltInButton.wasPressed()) {
     switch (Display.getCurrentScreen()) {
       case MenuScreen::mainScreen: SysMgr.increment(); break;

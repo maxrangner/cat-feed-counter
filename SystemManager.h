@@ -2,16 +2,15 @@
 #include "time.h"
 #include "src/WiFiManager.h"
 #include "DayStats.h"
+#include "definitions.h"
 
 class Display;
 
 class SystemManager {
   WiFiManager wifi;
   uint8_t counter;
-  time_t feedTimesArray[9] = {0};
+  time_t feedTimes[MAX_FEEDS] = {0};
 public:
-  time_t previousDay;
-
   SystemManager();
   void setup(Display& disp);
   
