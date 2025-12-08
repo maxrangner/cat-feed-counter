@@ -29,6 +29,8 @@ public:
   // UTILS
   void limiter();
   void checkDay();
-  void printFeedTimes();
-  void printPreviousFeedTimes();
+
+  // DEBUG
+  void debugPrintFeedTimes();
+  void debugPrintPreviousFeedTimes();
 };

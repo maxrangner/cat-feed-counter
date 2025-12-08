@@ -35,17 +35,16 @@ const time_t& SystemManager::getLastFeedTime() const {
 // CORE
 void SystemManager::increment() {
   feedTimes[counter] = getTime();
-  Serial.print("counter: "); Serial.print(counter);
-  Serial.println(" Increment counter.");
+  Serial.print("counter: "); Serial.print(counter); Serial.print(": ");
   counter++;
   this->limiter();
-  this->printFeedTimes();
+  this->debugPrintFeedTimes();
 }
 
 void SystemManager::resetDay() {
   Serial.println("ResetDay()");
   this->updatePreviousFeedTimes();
-  this->printPreviousFeedTimes();
+  this->debugPrintPreviousFeedTimes();
   this->resetFeedTimes();
   counter = 0;
 }
@@ -57,12 +56,12 @@ void SystemManager::resetFeedTimes() {
 }
 
 void SystemManager::updatePreviousFeedTimes() {
-  for (int day = 0; day < (DAYS_SAVED - 1); day++) {
+  for (int day = 0; day < (DAYS_SAVED - 1); day++) { // Move every day one step back
     for (int time = 0; time < MAX_FEEDS; time++) {
       previousFeedTimes[day][time] = previousFeedTimes[day + 1][time];
     }
   }
-  for (int time = 0; time < MAX_FEEDS; time++) {
+  for (int time = 0; time < MAX_FEEDS; time++) { // Place newest day last
     previousFeedTimes[DAYS_SAVED - 1][time] = feedTimes[time];
   }
 }
@@ -84,14 +83,14 @@ void SystemManager::checkDay() {
   // }
 }
 
-void SystemManager::printFeedTimes() {
+void SystemManager::debugPrintFeedTimes() {
   for (auto& t : feedTimes) {
     Serial.print(t); Serial.print("   ");
   }
   Serial.println(" ");
 }
 
-void SystemManager::printPreviousFeedTimes() {
+void SystemManager::debugPrintPreviousFeedTimes() {
   int day = 0;
   for (auto& d : previousFeedTimes) {
     Serial.print(day++); Serial.print(": ");
