@@ -14,7 +14,7 @@ void SystemManager::init(void)
         8192,                      // Stack size in words
         this,                      // Task input parameter
         1,                         // Priority of the task
-        &task_system_manager_,     // Task handle.
+        &system_task_,             // Task handle.
         0                          // Core where the task should run
     );
 }

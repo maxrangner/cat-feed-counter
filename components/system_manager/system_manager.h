@@ -5,7 +5,7 @@
 #include "freertos/task.h"
 
 class SystemManager {
-    TaskHandle_t task_system_manager_ = nullptr;
+    TaskHandle_t system_task_ = nullptr;
     QueueHandle_t system_in_queue_ = nullptr;
 
     static void system_task(void* pvParameters);

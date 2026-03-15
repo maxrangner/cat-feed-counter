@@ -3,12 +3,16 @@
 
 #include "display.h"
 #include "system_manager.h"
+#include "ui_manager.h"
 
 extern "C" void app_main(void)
 {
     display_init();
     SystemManager sys_mgr;
     sys_mgr.init();
+    UiManager ui_mgr;
+    ui_mgr.init();
+    
     uint8_t count = 0;
 
     lvgl_port_lock(portMAX_DELAY);

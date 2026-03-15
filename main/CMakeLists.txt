@@ -1,5 +1,5 @@
 idf_component_register(
     SRCS "main.cpp"
     INCLUDE_DIRS "."
-    REQUIRES display system_manager
+    REQUIRES display system_manager ui_manager
 )
