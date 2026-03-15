@@ -7,10 +7,10 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 
+static esp_lcd_panel_io_handle_t io_handle = NULL;
+static esp_lcd_panel_handle_t panel_handle = NULL;
 
-
-
-void display_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t panel_handle)
+void display_init(void)
 {
     spi_bus_config_t buscfg = {};
 
@@ -29,7 +29,7 @@ void display_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t pa
 
     io_config.dc_gpio_num       = PIN_NUM_DC;
     io_config.cs_gpio_num       = PIN_NUM_CS;
-    io_config.pclk_hz           = 12 * 1000 * 1000;
+    io_config.pclk_hz           = 40 * 1000 * 1000;
     io_config.spi_mode          = 0;
     io_config.trans_queue_depth = 10;
     io_config.lcd_cmd_bits      = 8;
@@ -71,8 +71,8 @@ void display_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t pa
     gpio_set_direction((gpio_num_t)PIN_NUM_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
 
-    const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
-
+    lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+    lvgl_cfg.task_max_sleep_ms = 10;
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
 
     lvgl_port_display_cfg_t disp_cfg = {};
@@ -83,17 +83,17 @@ void display_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t pa
     disp_cfg.double_buffer = true;
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
+    disp_cfg.flags.buff_dma = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
+    
+}
 
-    lvgl_port_lock(0);
+void display_feeds(lv_obj_t* label, uint8_t* count)
+{
+    lvgl_port_lock(portMAX_DELAY);
 
-        lv_obj_set_style_bg_color(lv_scr_act(), lv_color_white(), 0);
-        lv_obj_t *label = lv_label_create(lv_scr_act());
-        lv_obj_set_style_text_font(label, &lv_font_montserrat_22, 0);
-        lv_obj_set_style_text_color(label, lv_color_black(), 0);
-        lv_label_set_text(label, "Hello LVGL");
-        lv_obj_center(label);
+        lv_label_set_text_fmt(label, "Count: %d", *count);
 
     lvgl_port_unlock();
 }

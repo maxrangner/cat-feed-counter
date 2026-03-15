@@ -19,6 +19,7 @@
 #define LCD_V_RES    320
 #define LCD_BUF_SIZE (LCD_H_RES * 80)
 
-void display_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t panel_handle);
+void display_init(void);
+void display_feeds(lv_obj_t* label, uint8_t* count);
 
 #endif
