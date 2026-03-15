@@ -7,6 +7,10 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 
+#include "esp_log.h"
+
+static const char *TAG = "display";
+
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 
@@ -50,17 +54,18 @@ void display_init(void)
     );
 
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
+    vTaskDelay(pdMS_TO_TICKS(120));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+    vTaskDelay(pdMS_TO_TICKS(120));
 
-    esp_lcd_panel_mirror(panel_handle, true, false);
-    esp_lcd_panel_set_gap(panel_handle, 34, 0);
+    esp_lcd_panel_set_gap(panel_handle, 0, 34);
     esp_lcd_panel_invert_color(panel_handle, true);
 
     // Clear GRAM before backlight turns on
     uint16_t *line = (uint16_t *)heap_caps_calloc(240, sizeof(uint16_t), MALLOC_CAP_DMA);
     if (line) {
         memset(line, 0xFF, 240 * sizeof(uint16_t));  // 0xFFFF = white in RGB565
-        for (int y = 0; y < LCD_V_RES; y++) {
+        for (int y = 0; y < 320; y++) {
             esp_lcd_panel_draw_bitmap(panel_handle, 0, y, 240, y + 1, line);
         }
         free(line);
@@ -69,7 +74,6 @@ void display_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
 
     gpio_set_direction((gpio_num_t)PIN_NUM_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
 
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_max_sleep_ms = 10;
@@ -84,9 +88,12 @@ void display_init(void)
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
     disp_cfg.flags.buff_dma = true;
+    disp_cfg.rotation.swap_xy  = true;
+    disp_cfg.rotation.mirror_x = false;
+    disp_cfg.rotation.mirror_y = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
-    
+    gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
 }
 
 void display_feeds(lv_obj_t* label, uint8_t* count)
