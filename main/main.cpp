@@ -2,10 +2,13 @@
 #include "freertos/task.h"
 
 #include "display.h"
+#include "system_manager.h"
 
 extern "C" void app_main(void)
 {
     display_init();
+    SystemManager sys_mgr;
+    sys_mgr.init();
     uint8_t count = 0;
 
     lvgl_port_lock(portMAX_DELAY);
@@ -17,7 +20,7 @@ extern "C" void app_main(void)
         lv_obj_center(label);
     lvgl_port_unlock();
 
-    while (true)
+    while (1)
     {
         display_feeds(label, &count);
         count++;
