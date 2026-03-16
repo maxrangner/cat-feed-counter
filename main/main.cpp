@@ -9,9 +9,12 @@ extern "C" void app_main(void)
 {
     display_init();
     SystemManager sys_mgr;
-    sys_mgr.init();
     UiManager ui_mgr;
+
+    sys_mgr.init();
     ui_mgr.init();
+    sys_mgr.connectUi(ui_mgr.getInputQueue());
+    ui_mgr.connectSystem(sys_mgr.getInputQueue());
     
     uint8_t count = 0;
 

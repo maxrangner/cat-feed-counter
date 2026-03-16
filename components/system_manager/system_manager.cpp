@@ -17,6 +17,8 @@ void SystemManager::init(void)
         &system_task_,             // Task handle.
         0                          // Core where the task should run
     );
+
+    system_in_queue_ = xQueueCreate(10, sizeof(sys_msg_t));
 }
 
 void SystemManager::system_task(void* pvParameters)
@@ -27,4 +29,14 @@ void SystemManager::system_task(void* pvParameters)
         ESP_LOGI(TAG, "system_manager says hello!");
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+}
+
+void SystemManager::connectUi(QueueHandle_t ui_queue)
+{
+    ui_in_queue_ = ui_queue;
+}
+
+QueueHandle_t SystemManager::getInputQueue(void)
+{
+    return system_in_queue_;
 }

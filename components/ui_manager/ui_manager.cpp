@@ -8,7 +8,7 @@ static const char *TAG = "ui manager";
 
 UiManager::UiManager(void) {}
 
-void UiManager::init()
+void UiManager::init(void)
 {
     xTaskCreatePinnedToCore(       // UI Task
         ui_task,                   // Function to implement the task
@@ -19,6 +19,8 @@ void UiManager::init()
         &ui_task_,                 // Task handle.
         0                          // Core where the task should run
     );
+
+    ui_in_queue_ = xQueueCreate(10, sizeof(ui_msg_t));
 }
 
 void UiManager::ui_task(void* pvParameters)
@@ -42,4 +44,14 @@ void UiManager::ui_task(void* pvParameters)
         lvgl_port_unlock();
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
+}
+
+void UiManager::connectSystem(QueueHandle_t sys_queue)
+{
+    system_in_queue_ = sys_queue;
+}
+
+QueueHandle_t UiManager::getInputQueue(void)
+{
+    return ui_in_queue_;
 }
