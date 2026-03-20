@@ -4,6 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "screens.h"
+
 enum class AppEventType {
     ButtonShortPress,
     ButtonLongPress,
@@ -16,6 +18,9 @@ typedef struct {
 class AppController {
     TaskHandle_t task_app_controller_ = nullptr;
     QueueHandle_t in_queue_ = nullptr;
+    screen_t* current_screen_;
+
+    uint8_t counter;
 
     static void app_task(void* pvParameters);
 public:
