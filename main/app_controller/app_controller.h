@@ -4,6 +4,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+enum class AppEventType {
+    ButtonShortPress,
+    ButtonLongPress,
+};
+
+typedef struct {
+    AppEventType msg_event;
+} app_event;
+
 class AppController {
     TaskHandle_t task_app_controller_ = nullptr;
     QueueHandle_t in_queue_ = nullptr;

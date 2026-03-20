@@ -1,15 +1,13 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "display.h"
+
 #include "app_controller.h"
 
 extern "C" void app_main(void)
 {
-    display_init();
     AppController app_controller;
     app_controller.init();
-
 
     while (1)
     {

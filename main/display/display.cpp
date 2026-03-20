@@ -88,12 +88,3 @@ void display_init(void)
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
     
 }
-
-void display_feeds(lv_obj_t* label, uint8_t* count)
-{
-    lvgl_port_lock(portMAX_DELAY);
-
-        lv_label_set_text_fmt(label, "Count: %d", *count);
-
-    lvgl_port_unlock();
-}

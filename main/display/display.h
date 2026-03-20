@@ -20,6 +20,5 @@
 #define LCD_BUF_SIZE (LCD_H_RES * 80)
 
 void display_init(void);
-void display_feeds(lv_obj_t* label, uint8_t* count);
 
 #endif
