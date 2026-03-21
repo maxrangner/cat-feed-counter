@@ -10,7 +10,7 @@
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 
-void display_init(void)
+static void display_spi_init(void)
 {
     spi_bus_config_t buscfg = {};
 
@@ -24,7 +24,10 @@ void display_init(void)
     ESP_ERROR_CHECK(
         spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO)
     );
+}
 
+static void display_io_init(void)
+{
     esp_lcd_panel_io_spi_config_t io_config = {};
 
     io_config.dc_gpio_num       = PIN_NUM_DC;
@@ -38,7 +41,10 @@ void display_init(void)
     ESP_ERROR_CHECK(
         esp_lcd_new_panel_io_spi(SPI2_HOST, &io_config, &io_handle)
     );
+}
 
+static void display_panel_init(void)
+{
     esp_lcd_panel_dev_config_t panel_config = {};
 
     panel_config.reset_gpio_num = PIN_NUM_RST;
@@ -52,7 +58,6 @@ void display_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
 
-    // esp_lcd_panel_mirror(panel_handle, false, true);
     esp_lcd_panel_set_gap(panel_handle, 0, 34);
     esp_lcd_panel_invert_color(panel_handle, true);
 
@@ -70,7 +75,10 @@ void display_init(void)
 
     gpio_set_direction((gpio_num_t)PIN_NUM_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
+}
 
+static void display_lvgl_init(void)
+{
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_max_sleep_ms = 10;
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
@@ -90,5 +98,12 @@ void display_init(void)
     disp_cfg.flags.buff_dma = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
-    
+}
+
+void display_init(void)
+{
+    display_spi_init();
+    display_io_init();
+    display_panel_init();
+    display_lvgl_init();
 }
