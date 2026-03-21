@@ -38,8 +38,6 @@ void AppController::app_task(void* pvParameters)
     auto* self = static_cast<AppController*>(pvParameters);
     AppEventType event;
 
-    main_screen_enter();
-
     while(1) {
         ESP_LOGI(TAG, "app controller says hello!");
         if (self->counter % 5 == 0) {

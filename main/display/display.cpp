@@ -52,8 +52,8 @@ void display_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
 
-    esp_lcd_panel_mirror(panel_handle, true, false);
-    esp_lcd_panel_set_gap(panel_handle, 34, 0);
+    // esp_lcd_panel_mirror(panel_handle, false, true);
+    esp_lcd_panel_set_gap(panel_handle, 0, 34);
     esp_lcd_panel_invert_color(panel_handle, true);
 
     // Clear GRAM before backlight turns on
@@ -83,6 +83,10 @@ void display_init(void)
     disp_cfg.double_buffer = true;
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
+    disp_cfg.rotation.mirror_x = false;
+    disp_cfg.rotation.mirror_y = true;
+    disp_cfg.rotation.swap_xy = true;
+    
     disp_cfg.flags.buff_dma = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
