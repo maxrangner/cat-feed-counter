@@ -39,15 +39,16 @@ void AppController::app_task(void* pvParameters)
     AppEventType event;
 
     while(1) {
-        ESP_LOGI(TAG, "app controller says hello!");
-        if (self->counter % 5 == 0) {
-            self->current_screen_ = &statistics_screen;
-        } else {
-            self->current_screen_ = &main_screen;
-        }
+        ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
+        // if (self->counter % 5 == 0) {
+        //     self->current_screen_ = &statistics_screen;
+        // } else {
+        //     self->current_screen_ = &main_screen;
+        // }
         self->current_screen_->enter();
+        self->counter = (self->counter + 1) % 100;
         self->current_screen_->render(self->counter++);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(100));
         // if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
         //     if (event == AppEventType::ButtonShortPress) {
 
