@@ -1,17 +1,25 @@
 #include "app_controller.h"
 
 #include "lvgl.h"
+#include "nvs_flash.h"
 #include "esp_log.h"
 #include "display.h"
 
 static const char *TAG = "app_controller";
 static void btn_cb(void *user_data);
 
-AppController::AppController(void) {}
+AppController::AppController() {}
 
-void AppController::init(void)
+void AppController::init()
 {
     display_init();
+
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
     lvgl_port_lock(portMAX_DELAY);
         main_screen_init();
@@ -37,10 +45,12 @@ void AppController::init(void)
 void AppController::app_task(void* pvParameters)
 {
     auto* self = static_cast<AppController*>(pvParameters);
-    AppEventType event;
+    app_event event;
+    AppWifi app_wifi;
+    app_wifi.init(self->getAppQueue());
 
     while(1) {
-        ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
+        // ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
         // if (self->counter % 5 == 0) {
         //     self->current_screen_ = &statistics_screen;
         // } else {
@@ -49,13 +59,22 @@ void AppController::app_task(void* pvParameters)
         btn_cb((void*)self);
         vTaskDelay(pdMS_TO_TICKS(50));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
-            if (event == AppEventType::ButtonShortPress) {
+            if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
                 self->current_screen_->enter();
                 self->counter = (self->counter + 1) % 100;
                 self->current_screen_->render(self->counter++);
             }
-            if (event == AppEventType::ButtonLongPress) {
+            if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
                 // PLACEHOLDER
+            }
+            if (event.msg_event == AppEventType::WIFI_UPDATE) {
+                if (event.wifi_state == WifiState::CONNECTED_STA) {
+                    ESP_LOGI(TAG, "WifiState::CONNECTED_STA");
+                }
+                if (event.wifi_state == WifiState::DISCONNECTED) {
+                    ESP_LOGI(TAG, "WifiState::DISCONNECTED");
+                }
+                
             }
         }
     }
@@ -71,6 +90,11 @@ void btn_cb(void *user_data)
     AppController *self = (AppController *)user_data;
 
     app_event event;
-    event.msg_event = AppEventType::ButtonShortPress;
+    event.msg_event = AppEventType::BTN_SHORT_PRESS;
     self->post_event(event);
+}
+
+QueueHandle_t AppController::getAppQueue()
+{
+    return in_queue_;
 }

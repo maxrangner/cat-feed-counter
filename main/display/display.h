@@ -19,6 +19,6 @@
 #define LCD_V_RES    172
 #define LCD_BUF_SIZE (LCD_H_RES * 80)
 
-void display_init(void);
+void display_init();
 
 #endif

@@ -10,7 +10,7 @@
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 
-static void display_spi_init(void)
+static void display_spi_init()
 {
     spi_bus_config_t buscfg = {};
 
@@ -26,7 +26,7 @@ static void display_spi_init(void)
     );
 }
 
-static void display_io_init(void)
+static void display_io_init()
 {
     esp_lcd_panel_io_spi_config_t io_config = {};
 
@@ -77,7 +77,7 @@ static void display_panel_init(void)
     gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
 }
 
-static void display_lvgl_init(void)
+static void display_lvgl_init()
 {
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_cfg.task_max_sleep_ms = 10;
@@ -100,7 +100,7 @@ static void display_lvgl_init(void)
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
 }
 
-void display_init(void)
+void display_init()
 {
     display_spi_init();
     display_io_init();

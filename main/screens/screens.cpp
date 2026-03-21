@@ -9,7 +9,7 @@ static lv_obj_t* main_label_bar;
 static lv_obj_t* statistics_scr;
 static lv_obj_t* statistics_label_stat;
 
-void main_screen_init(void)
+void main_screen_init()
 {
     main_scr = lv_obj_create(NULL);
     main_label_text = lv_label_create(main_scr);
@@ -31,7 +31,7 @@ void main_screen_init(void)
     lv_bar_set_value(main_label_bar, 70, LV_ANIM_ON);
 }
 
-void main_screen_enter(void)
+void main_screen_enter()
 {
     lv_scr_load(main_scr);
 }
@@ -47,7 +47,7 @@ screen_t main_screen = {
     .render = main_screen_render,
 };
 
-void statistics_screen_init(void)
+void statistics_screen_init()
 {
     statistics_scr = lv_obj_create(NULL);
     statistics_label_stat = lv_label_create(statistics_scr);
@@ -56,7 +56,7 @@ void statistics_screen_init(void)
     lv_label_set_text(statistics_label_stat, "Stats coming soon...");
 }
 
-void statistics_screen_enter(void)
+void statistics_screen_enter()
 {
     lv_scr_load(statistics_scr);
 }

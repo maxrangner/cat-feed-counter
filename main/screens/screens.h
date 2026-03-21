@@ -10,12 +10,12 @@ typedef struct {
 extern screen_t main_screen;
 extern screen_t statistics_screen;
 
-void main_screen_init(void); 
-void main_screen_enter(void);
+void main_screen_init(); 
+void main_screen_enter();
 void main_screen_render(int count);
 
-void statistics_screen_init(void); 
-void statistics_screen_enter(void);
+void statistics_screen_init(); 
+void statistics_screen_enter();
 void statistics_screen_render(int count);
 
 #endif
