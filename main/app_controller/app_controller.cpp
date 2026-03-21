@@ -5,6 +5,7 @@
 #include "display.h"
 
 static const char *TAG = "app_controller";
+static void btn_cb(void *user_data);
 
 AppController::AppController(void) {}
 
@@ -45,17 +46,31 @@ void AppController::app_task(void* pvParameters)
         // } else {
         //     self->current_screen_ = &main_screen;
         // }
-        self->current_screen_->enter();
-        self->counter = (self->counter + 1) % 100;
-        self->current_screen_->render(self->counter++);
-        vTaskDelay(pdMS_TO_TICKS(100));
-        // if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
-        //     if (event == AppEventType::ButtonShortPress) {
-
-        //     }
-        //     if (event == AppEventType::ButtonLongPress) {
-
-        //     }
-        // }
+        btn_cb((void*)self);
+        vTaskDelay(pdMS_TO_TICKS(50));
+        if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
+            if (event == AppEventType::ButtonShortPress) {
+                self->current_screen_->enter();
+                self->counter = (self->counter + 1) % 100;
+                self->current_screen_->render(self->counter++);
+            }
+            if (event == AppEventType::ButtonLongPress) {
+                // PLACEHOLDER
+            }
+        }
     }
+}
+
+void AppController::post_event(app_event event)
+{
+    xQueueSend(in_queue_, &event, 0);
+}
+
+void btn_cb(void *user_data)
+{
+    AppController *self = (AppController *)user_data;
+
+    app_event event;
+    event.msg_event = AppEventType::ButtonShortPress;
+    self->post_event(event);
 }

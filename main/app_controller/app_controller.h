@@ -26,6 +26,7 @@ class AppController {
 public:
     AppController(void);
     void init(void);
+    void post_event(app_event event);
 };
 
 #endif
