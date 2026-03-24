@@ -6,8 +6,9 @@
 #include "display.h"
 #include "app_storage.h"
 
+
 static const char *TAG = "app_controller";
-static void btn_cb(void *user_data);
+static void btn_cb(button_event_t btn_event, void* user_data);
 
 AppController::AppController() : stats_{} {}
 
@@ -41,19 +42,28 @@ void AppController::init()
         &task_app_controller_,     // Task handle.
         0                          // Core where the task should run
     );
+
+    button_cfg_t btn_cfg = {
+        .gpio_num = 0,
+        .hasPullup = true,
+        .btn_callback = btn_cb,
+        .user_data = this,
+    };
+    button_init(&btn_cfg, &btn_);
 }
 
 void AppController::app_task(void* pvParameters)
 {
     auto* self = static_cast<AppController*>(pvParameters);
-    app_event_t event;
+    button_event_t btn_event = BTN_SHORT_PRESS;
     AppWifi app_wifi;
     AppStorage app_storage;
-
+    
     app_wifi.init(self->getAppQueue());
     app_storage.init();
     app_storage.load_stats(&self->stats_);
-
+    
+    app_event_t event;
     day_data_t temp_data = {
         .num_feeds = 1,
     };
@@ -69,13 +79,15 @@ void AppController::app_task(void* pvParameters)
         // } else {
         //     self->current_screen_ = &main_screen;
         // }
-        btn_cb((void*)self);
-        vTaskDelay(pdMS_TO_TICKS(50));
+        btn_cb(btn_event, (void*)self);
+        vTaskDelay(pdMS_TO_TICKS(10));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
             if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
                 self->current_screen_->enter();
-                self->counter = (self->counter + 1) % 100;
+                self->counter = (self->counter + 1) % 10;
                 self->current_screen_->render(self->counter++);
+            }
+            if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
             }
             if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
                 // PLACEHOLDER
@@ -98,12 +110,17 @@ void AppController::post_event(app_event_t event)
     xQueueSend(in_queue_, &event, 0);
 }
 
-void btn_cb(void *user_data)
+void btn_cb(button_event_t btn_event, void* user_data)
 {
     AppController *self = (AppController *)user_data;
 
     app_event_t event;
-    event.msg_event = AppEventType::BTN_SHORT_PRESS;
+
+    if (btn_event == BTN_SHORT_PRESS) {
+        event.msg_event = AppEventType::BTN_SHORT_PRESS;
+    } else {
+        event.msg_event = AppEventType::BTN_LONG_PRESS;
+    }
     self->post_event(event);
 }
 

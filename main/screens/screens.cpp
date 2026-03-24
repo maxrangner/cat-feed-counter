@@ -27,7 +27,7 @@ void main_screen_init()
     main_label_bar = lv_bar_create(main_scr);
     lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_size(main_label_bar, 150, 20);
-    lv_bar_set_range(main_label_bar, 0, 100);
+    lv_bar_set_range(main_label_bar, 0, 10);
     lv_bar_set_value(main_label_bar, 70, LV_ANIM_ON);
 }
 
