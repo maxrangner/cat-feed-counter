@@ -15,6 +15,14 @@ typedef struct {
         WifiState wifi_state;
     };
     
-} app_event;
+} app_event_t;
+
+typedef struct {
+    uint32_t num_feeds;
+} day_data_t;
+
+typedef struct {
+    uint32_t tot_num_feeds;
+} stats_t;
 
 #endif

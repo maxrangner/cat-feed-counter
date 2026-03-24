@@ -12,13 +12,14 @@ class AppController {
     QueueHandle_t in_queue_ = nullptr;
     screen_t* current_screen_;
 
+    stats_t stats_;
     uint8_t counter;
 
     static void app_task(void* pvParameters);
 public:
     AppController();
     void init();
-    void post_event(app_event event);
+    void post_event(app_event_t event);
     QueueHandle_t getAppQueue();
 };
 

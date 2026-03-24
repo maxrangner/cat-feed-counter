@@ -52,7 +52,7 @@ void AppWifi::wifi_event_cb(void* arg, esp_event_base_t event_base, int32_t even
 {
     auto* self = static_cast<AppWifi*>(arg);
 
-    app_event packet;
+    app_event_t packet;
     packet.msg_event = AppEventType::WIFI_UPDATE;
 
     if (event_base == WIFI_EVENT) {
