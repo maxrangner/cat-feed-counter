@@ -4,11 +4,12 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "display.h"
+#include "app_storage.h"
 
 static const char *TAG = "app_controller";
 static void btn_cb(void *user_data);
 
-AppController::AppController() {}
+AppController::AppController() : stats_{} {}
 
 void AppController::init()
 {
@@ -29,7 +30,7 @@ void AppController::init()
     current_screen_ = &main_screen;
     counter = 0;
 
-    in_queue_ = xQueueCreate(10, sizeof(app_event));
+    in_queue_ = xQueueCreate(10, sizeof(app_event_t));
 
     xTaskCreatePinnedToCore(       // UI Task
         app_task,                  // Function to implement the task
@@ -45,9 +46,21 @@ void AppController::init()
 void AppController::app_task(void* pvParameters)
 {
     auto* self = static_cast<AppController*>(pvParameters);
-    app_event event;
+    app_event_t event;
     AppWifi app_wifi;
+    AppStorage app_storage;
+
     app_wifi.init(self->getAppQueue());
+    app_storage.init();
+    app_storage.load_stats(&self->stats_);
+
+    day_data_t temp_data = {
+        .num_feeds = 1,
+    };
+
+    app_storage.write_stats(&temp_data);
+    
+    ESP_LOGI(TAG, "STATS ---------------->   %d", self->stats_.tot_num_feeds);
 
     while(1) {
         // ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
@@ -80,7 +93,7 @@ void AppController::app_task(void* pvParameters)
     }
 }
 
-void AppController::post_event(app_event event)
+void AppController::post_event(app_event_t event)
 {
     xQueueSend(in_queue_, &event, 0);
 }
@@ -89,7 +102,7 @@ void btn_cb(void *user_data)
 {
     AppController *self = (AppController *)user_data;
 
-    app_event event;
+    app_event_t event;
     event.msg_event = AppEventType::BTN_SHORT_PRESS;
     self->post_event(event);
 }
