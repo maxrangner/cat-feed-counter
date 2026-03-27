@@ -6,6 +6,7 @@
 
 #include "app_types.h"
 #include "screens.h"
+#include "button_driver.h"
 
 class AppController {
     TaskHandle_t task_app_controller_ = nullptr;
@@ -13,6 +14,7 @@ class AppController {
     screen_t* current_screen_;
 
     stats_t stats_;
+    button_t btn_;
     uint8_t counter;
 
     static void app_task(void* pvParameters);

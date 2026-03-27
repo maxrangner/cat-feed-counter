@@ -33,7 +33,7 @@ esp_err_t AppStorage::write_stats(day_data_t* data)
     }
     fwrite(data, sizeof(day_data_t), 1, file);
     fclose(file);
-    ESP_LOGI(TAG, "File written");
+    // ESP_LOGI(TAG, "File written: STATS -------------> %d", data->num_feeds);
 
     return ESP_OK;
 }
