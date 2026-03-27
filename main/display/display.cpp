@@ -80,7 +80,8 @@ static void display_panel_init(void)
 static void display_lvgl_init()
 {
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
-    lvgl_cfg.task_max_sleep_ms = 10;
+    // TODO: Find higher value that still gives smooth screen updates. 500?
+    lvgl_cfg.task_max_sleep_ms = 500; 
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
 
     lvgl_port_display_cfg_t disp_cfg = {};
