@@ -17,7 +17,7 @@ typedef enum {
 
 typedef struct {
     uint8_t gpio_num;
-    bool active_low;
+    bool pressed_level;
     void (*btn_callback)(button_event_t event, void* user_data);
     void* user_data;
     TimerHandle_t timer;
@@ -27,6 +27,7 @@ typedef struct {
 typedef struct {
     uint8_t gpio_num;
     bool hasPullup;
+    uint16_t debounce;
     void (*btn_callback)(button_event_t event, void* user_data);
     void* user_data;
 } button_cfg_t;

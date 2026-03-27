@@ -94,7 +94,6 @@ static void display_lvgl_init()
     disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = true;
     disp_cfg.rotation.swap_xy = true;
-    
     disp_cfg.flags.buff_dma = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
