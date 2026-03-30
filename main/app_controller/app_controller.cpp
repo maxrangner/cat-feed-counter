@@ -47,7 +47,8 @@ void AppController::init()
     button_cfg_t btn_cfg = {
         .gpio_num = 9,
         .hasPullup = true,
-        .debounce = 100,
+        .debounce = 50,
+        .long_press_dur = 500,
         .btn_callback = btn_cb,
         .user_data = this,
     };
@@ -99,10 +100,11 @@ void AppController::app_task(void* pvParameters)
         // } else {
         //     self->current_screen_ = &main_screen;
         // }
-        btn_cb(btn_event, (void*)self);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // btn_cb(btn_event, (void*)self);
+        // vTaskDelay(pdMS_TO_TICKS(1000));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
             if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
+                ESP_LOGI(TAG, "BTN_SHORT_PRESS");
                 lvgl_port_lock(0);
                     self->current_screen_->enter();
                     self->counter = (self->counter + 1) % 10;
@@ -110,9 +112,7 @@ void AppController::app_task(void* pvParameters)
                 lvgl_port_unlock();
             }
             if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
-            }
-            if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
-                // PLACEHOLDER
+                ESP_LOGI(TAG, "BTN_LONG_PRESS");
             }
             if (event.msg_event == AppEventType::WIFI_UPDATE) {
                 if (event.wifi_state == WifiState::CONNECTED_STA) {
@@ -140,7 +140,8 @@ void btn_cb(button_event_t btn_event, void* user_data)
 
     if (btn_event == BTN_SHORT_PRESS) {
         event.msg_event = AppEventType::BTN_SHORT_PRESS;
-    } else {
+    }
+    if (btn_event == BTN_LONG_PRESS) {
         event.msg_event = AppEventType::BTN_LONG_PRESS;
     }
     self->post_event(event);
