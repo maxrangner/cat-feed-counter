@@ -6,7 +6,7 @@
 enum class AppEventType {
     BTN_SHORT_PRESS,
     BTN_LONG_PRESS,
-    WIFI_UPDATE,
+    TIME_SYNC_STATUS,
 };
 
 typedef struct {

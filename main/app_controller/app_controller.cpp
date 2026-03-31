@@ -1,5 +1,6 @@
 #include "app_controller.h"
 
+#include <ctime>
 #include "lvgl.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
@@ -60,7 +61,7 @@ void AppController::init()
     */
     esp_pm_config_t pm_config = {
         .max_freq_mhz = 160,
-        .min_freq_mhz = 10,
+        .min_freq_mhz = 80,
         .light_sleep_enable = true,
     };
     esp_pm_configure(&pm_config);
@@ -91,7 +92,7 @@ void AppController::app_task(void* pvParameters)
         self->current_screen_->enter();
     lvgl_port_unlock();
 
-    button_event_t btn_event = BTN_SHORT_PRESS;
+    // button_event_t btn_event = BTN_SHORT_PRESS;
 
     while(1) {
         // ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
@@ -113,15 +114,12 @@ void AppController::app_task(void* pvParameters)
             }
             if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
                 ESP_LOGI(TAG, "BTN_LONG_PRESS");
+                app_wifi.connect();
             }
-            if (event.msg_event == AppEventType::WIFI_UPDATE) {
-                if (event.wifi_state == WifiState::CONNECTED_STA) {
-                    ESP_LOGI(TAG, "WifiState::CONNECTED_STA");
-                }
-                if (event.wifi_state == WifiState::DISCONNECTED) {
-                    ESP_LOGI(TAG, "WifiState::DISCONNECTED");
-                }
-                
+            if (event.msg_event == AppEventType::TIME_SYNC_STATUS) {
+                int64_t t = time(NULL);
+                ESP_LOGI(TAG, "TIME_SYNC_STATUS: %lld", t);
+
             }
         }
     }
