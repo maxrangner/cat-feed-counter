@@ -18,7 +18,6 @@ static void IRAM_ATTR button_isr(void *arg)
 
 void button_timer_cb(TimerHandle_t xTimer)
 {
-    // ESP_LOGI(TAG, "Button timer callback!");
     button_t* handle = (button_t*)pvTimerGetTimerID(xTimer);
     button_event_t event;
 
