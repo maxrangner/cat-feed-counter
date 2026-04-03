@@ -54,25 +54,11 @@ void AppController::init()
         .user_data = this,
     };
     button_init(&btn_cfg, &btn_);
-
-    /*
-    Power management to keep device heat low
-    TODO: verify min_freq_mhz — find lowest value that keeps display smooth
-    */
-    esp_pm_config_t pm_config = {
-        .max_freq_mhz = 160,
-        .min_freq_mhz = 80,
-        .light_sleep_enable = true,
-    };
-    esp_pm_configure(&pm_config);
 }
 
 void AppController::app_task(void* pvParameters)
 {
     auto* self = static_cast<AppController*>(pvParameters);
-
-    esp_reset_reason_t reason = esp_reset_reason();
-    ESP_LOGI(TAG, "Reset reason: %d", reason);
 
     AppWifi app_wifi;
     AppStorage app_storage;
@@ -91,18 +77,9 @@ void AppController::app_task(void* pvParameters)
     lvgl_port_lock(0);
         self->current_screen_->enter();
     lvgl_port_unlock();
-
-    // button_event_t btn_event = BTN_SHORT_PRESS;
+    display_set_brightness(50); // %
 
     while(1) {
-        // ESP_LOGI(TAG, "app controller says hello! counter = %d", self->counter);
-        // if (self->counter % 5 == 0) {
-        //     self->current_screen_ = &statistics_screen;
-        // } else {
-        //     self->current_screen_ = &main_screen;
-        // }
-        // btn_cb(btn_event, (void*)self);
-        // vTaskDelay(pdMS_TO_TICKS(1000));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
             if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
                 ESP_LOGI(TAG, "BTN_SHORT_PRESS");

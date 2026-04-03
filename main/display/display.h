@@ -17,8 +17,8 @@
 #define PIN_NUM_RST  21
 #define PIN_NUM_BL   22
 
-#define LCD_H_RES    320
-#define LCD_V_RES    172
+#define LCD_H_RES    172
+#define LCD_V_RES    320
 #define LCD_BUF_SIZE (LCD_H_RES * 80)
 
 void display_init();
