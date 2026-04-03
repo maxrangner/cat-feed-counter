@@ -18,6 +18,7 @@ typedef enum {
 typedef struct {
     uint8_t gpio_num;
     bool pressed_level;
+    bool current_edge;
     uint16_t long_press_dur;
     void (*btn_callback)(button_event_t event, void* user_data);
     void* user_data;

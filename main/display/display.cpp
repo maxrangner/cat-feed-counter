@@ -69,7 +69,7 @@ static void display_panel_init(void)
     if (line) {
         memset(line, 0xFF, 240 * sizeof(uint16_t));  // 0xFFFF = white in RGB565
         for (int y = 0; y < LCD_V_RES; y++) {
-            esp_lcd_panel_draw_bitmap(panel_handle, 0, y, 240, y + 1, line);
+            esp_lcd_panel_draw_bitmap(panel_handle, 0, y, LCD_H_RES, y + 1, line);
         }
         free(line);
     }

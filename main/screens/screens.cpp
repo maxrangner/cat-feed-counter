@@ -31,7 +31,7 @@ void main_screen_init()
     lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_size(main_label_bar, 150, 20);
     lv_bar_set_range(main_label_bar, 0, 10);
-    lv_bar_set_value(main_label_bar, 70, LV_ANIM_ON);
+    lv_bar_set_value(main_label_bar, 70, 500);
 }
 
 void main_screen_enter()
@@ -42,7 +42,7 @@ void main_screen_enter()
 void main_screen_render(int count)
 {
     lv_label_set_text_fmt(main_label_count, "%d", count);
-    lv_bar_set_value(main_label_bar, count, LV_ANIM_ON);
+    lv_bar_set_value(main_label_bar, count, 500);
 }
 
 screen_t main_screen = {

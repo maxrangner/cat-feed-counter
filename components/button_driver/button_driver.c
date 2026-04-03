@@ -12,6 +12,7 @@ static void IRAM_ATTR button_isr(void *arg)
     button_t* handle = (button_t*)arg;
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    handle->current_edge = (gpio_num_t)gpio_get_level(handle->gpio_num);
     xTimerResetFromISR(handle->timer, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -21,12 +22,15 @@ void button_timer_cb(TimerHandle_t xTimer)
     button_t* handle = (button_t*)pvTimerGetTimerID(xTimer);
     button_event_t event;
 
-    if (gpio_get_level(handle->gpio_num) == handle->pressed_level) {
+    if ((handle->current_edge) == handle->pressed_level) {
         handle->press_time = esp_timer_get_time();
-    } else if (gpio_get_level(handle->gpio_num) != handle->pressed_level) {
+    } else {
         uint64_t now = esp_timer_get_time();
+        if (handle->press_time == 0) {
+            return;
+        }
         uint64_t pressed_time = (now - handle->press_time) / 1000;
-        ESP_LOGI(TAG, "Button pressed for %lld ms", ((now - handle->press_time) / 1000));
+        ESP_LOGI(TAG, "Button pressed for %lld ms", pressed_time);
         if (pressed_time > handle->long_press_dur) {
             event = BTN_LONG_PRESS;
             handle->btn_callback(event, handle->user_data);
@@ -34,6 +38,7 @@ void button_timer_cb(TimerHandle_t xTimer)
             event = BTN_SHORT_PRESS;
             handle->btn_callback(event, handle->user_data);
         }
+        handle->press_time = 0;
     }
 }
 
@@ -52,6 +57,7 @@ void button_init(const button_cfg_t* cfg, button_t* button_handle)
 
     button_handle->gpio_num = cfg->gpio_num;
     button_handle->pressed_level = cfg->hasPullup ? 0 : 1;
+    button_handle->current_edge = (gpio_num_t)gpio_get_level(button_handle->gpio_num);
     button_handle->long_press_dur = cfg->long_press_dur;
     button_handle->btn_callback = cfg->btn_callback;
     button_handle->user_data = cfg->user_data;
