@@ -17,6 +17,7 @@ void AppStorage::init()
             .use_one_fat = false,
     };
 
+    ESP_LOGI(TAG, "Free heap: %lu", esp_get_free_heap_size());
     esp_err_t err = esp_vfs_fat_spiflash_mount_rw_wl(base_path, "storage", &mount_config, &s_wl_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(err));

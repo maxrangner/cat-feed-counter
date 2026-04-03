@@ -1,6 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <cstdint>
+
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
 
@@ -20,5 +22,6 @@
 #define LCD_BUF_SIZE (LCD_H_RES * 80)
 
 void display_init();
+void display_set_brightness(uint8_t percent);
 
 #endif

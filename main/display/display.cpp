@@ -2,6 +2,7 @@
 
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_io.h"
@@ -32,7 +33,7 @@ static void display_io_init()
 
     io_config.dc_gpio_num       = PIN_NUM_DC;
     io_config.cs_gpio_num       = PIN_NUM_CS;
-    io_config.pclk_hz           = 40 * 1000 * 1000;
+    io_config.pclk_hz           = 12 * 1000 * 1000;
     io_config.spi_mode          = 0;
     io_config.trans_queue_depth = 10;
     io_config.lcd_cmd_bits      = 8;
@@ -72,9 +73,29 @@ static void display_panel_init(void)
     }
 
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
+}
 
-    gpio_set_direction((gpio_num_t)PIN_NUM_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)PIN_NUM_BL, 1);
+static void display_backlight_init()
+{
+    ledc_timer_config_t timer_config = {};
+    timer_config.speed_mode = LEDC_LOW_SPEED_MODE;
+    timer_config.timer_num = LEDC_TIMER_0;
+    timer_config.duty_resolution = LEDC_TIMER_10_BIT;
+    timer_config.freq_hz = 5000;
+    timer_config.clk_cfg = LEDC_AUTO_CLK;
+
+    ESP_ERROR_CHECK(ledc_timer_config(&timer_config));
+
+    ledc_channel_config_t channel_config = {};
+    channel_config.gpio_num = PIN_NUM_BL;
+    channel_config.speed_mode = LEDC_LOW_SPEED_MODE;
+    channel_config.channel = LEDC_CHANNEL_0;
+    channel_config.intr_type = LEDC_INTR_DISABLE;
+    channel_config.timer_sel = LEDC_TIMER_0;
+    channel_config.duty = 0;
+    channel_config.hpoint = 0;
+
+    ESP_ERROR_CHECK(ledc_channel_config(&channel_config));
 }
 
 static void display_lvgl_init()
@@ -89,15 +110,24 @@ static void display_lvgl_init()
     disp_cfg.io_handle     = io_handle;
     disp_cfg.panel_handle  = panel_handle;
     disp_cfg.buffer_size   = LCD_BUF_SIZE;
-    disp_cfg.double_buffer = true;
+    disp_cfg.double_buffer = false;
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
     disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = true;
     disp_cfg.rotation.swap_xy = true;
     disp_cfg.flags.buff_dma = true;
+    // disp_cfg.flags.full_refresh = true;
 
     lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
+}
+
+void display_set_brightness(uint8_t percent)
+{
+    uint32_t duty = (1023 * percent) / 100;
+
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
 }
 
 void display_init()
@@ -105,5 +135,7 @@ void display_init()
     display_spi_init();
     display_io_init();
     display_panel_init();
+    display_backlight_init();
+    display_set_brightness(65); // %
     display_lvgl_init();
 }

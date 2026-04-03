@@ -12,6 +12,9 @@ static lv_obj_t* statistics_label_stat;
 void main_screen_init()
 {
     main_scr = lv_obj_create(NULL);
+    // lv_obj_set_style_bg_color(main_scr, lv_color_black(), 0);
+    // lv_obj_set_style_bg_opa(main_scr, LV_OPA_COVER, 0);
+
     main_label_text = lv_label_create(main_scr);
     lv_label_set_long_mode(main_label_text, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(main_label_text, 150);
