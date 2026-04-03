@@ -36,7 +36,7 @@ void main_screen_init()
 
 void main_screen_enter()
 {
-    lv_scr_load(main_scr);
+    lv_screen_load(main_scr);
 }
 
 void main_screen_render(int count)
@@ -61,7 +61,7 @@ void statistics_screen_init()
 
 void statistics_screen_enter()
 {
-    lv_scr_load(statistics_scr);
+    lv_screen_load(statistics_scr);
 }
 
 void statistics_screen_render(int count)

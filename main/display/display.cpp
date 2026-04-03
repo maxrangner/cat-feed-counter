@@ -1,5 +1,7 @@
 #include "display.h"
 
+#include <cstring>
+
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
@@ -101,8 +103,7 @@ static void display_backlight_init()
 static void display_lvgl_init()
 {
     lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
-    // TODO: Find higher value that still gives smooth screen updates. 500?
-    lvgl_cfg.task_max_sleep_ms = LV_DISP_DEF_REFR_PERIOD; 
+    lvgl_cfg.task_max_sleep_ms = 500;
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
 
     lvgl_port_display_cfg_t disp_cfg = {};
@@ -113,13 +114,14 @@ static void display_lvgl_init()
     disp_cfg.double_buffer = false;
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
+    disp_cfg.color_format  = LV_COLOR_FORMAT_RGB565;
     disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = true;
     disp_cfg.rotation.swap_xy = true;
     disp_cfg.flags.buff_dma = true;
-    // disp_cfg.flags.full_refresh = true;
+    disp_cfg.flags.swap_bytes = true;
 
-    lv_disp_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
+    lv_display_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
 }
 
 void display_set_brightness(uint8_t percent)
