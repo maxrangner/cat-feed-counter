@@ -28,11 +28,11 @@ void AppController::init()
     ESP_ERROR_CHECK(ret);
 
     lvgl_port_lock(portMAX_DELAY);
-        main_screen_init();
-        statistics_screen_init();
+        main_screen_.init();
+        options_screen_.init();
     lvgl_port_unlock();
 
-    current_screen_ = &main_screen;
+    current_screen_ = screens[0];
     counter = 0;
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
@@ -86,17 +86,21 @@ void AppController::app_task(void* pvParameters)
         btn_cb(btn_event, (void*)self);
         vTaskDelay(pdMS_TO_TICKS(50));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
-            if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
-                ESP_LOGI(TAG, "BTN_SHORT_PRESS");
+            if (event.msg_event == AppEventType::DISPLAY_UPDATE) {
                 lvgl_port_lock(0);
                     self->current_screen_->enter();
-                    self->counter = (self->counter + 1) % 10;
-                    self->current_screen_->render(self->counter);
                 lvgl_port_unlock();
+            }
+            if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
+                ESP_LOGI(TAG, "BTN_SHORT_PRESS");
+
             }
             if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
                 ESP_LOGI(TAG, "BTN_LONG_PRESS");
-                app_wifi.connect();
+                lvgl_port_lock(0);
+                    self->next_screen();
+                lvgl_port_unlock();
+                // app_wifi.connect();
             }
             if (event.msg_event == AppEventType::TIME_SYNC_STATUS) {
                 int64_t t = time(NULL);
@@ -130,4 +134,14 @@ void btn_cb(button_event_t btn_event, void* user_data)
 QueueHandle_t AppController::getAppQueue()
 {
     return in_queue_;
+}
+
+void AppController::next_screen()
+{
+    app_event_t event;
+    event.msg_event = AppEventType::DISPLAY_UPDATE;
+    static uint8_t index = 0;
+    index = (index + 1) % 2;
+    current_screen_ = screens[index];
+    xQueueSend(in_queue_, &event, 0);
 }

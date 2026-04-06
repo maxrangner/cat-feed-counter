@@ -1,15 +1,10 @@
 #include "screens.h"
-#include "lvgl.h"
 
-static lv_obj_t* main_scr;
-static lv_obj_t* main_label_text;
-static lv_obj_t* main_label_count;
-static lv_obj_t* main_label_bar;
+/*
+-------------------------------MAIN SCREEN-------------------------------
+*/
 
-static lv_obj_t* statistics_scr;
-static lv_obj_t* statistics_label_stat;
-
-void main_screen_init()
+void MainScreen::init()
 {
     main_scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(main_scr, lv_color_white(), 0);
@@ -38,43 +33,75 @@ void main_screen_init()
     lv_bar_set_value(main_label_bar, 10, LV_ANIM_OFF);
 }
 
-void main_screen_enter()
+void MainScreen::enter()
 {
     lv_screen_load(main_scr);
 }
 
-void main_screen_render(int count)
+void MainScreen::render()
 {
+    uint8_t count = 0;
     lv_label_set_text_fmt(main_label_count, "%d", count);
     lv_bar_set_value(main_label_bar, count, LV_ANIM_OFF);
 }
 
-screen_t main_screen = {
-    .enter = main_screen_enter,
-    .render = main_screen_render,
-};
+void MainScreen::on_short_press() {
 
-void statistics_screen_init()
-{
-    statistics_scr = lv_obj_create(NULL);
-    statistics_label_stat = lv_label_create(statistics_scr);
-    lv_obj_set_style_text_font(statistics_label_stat, &lv_font_montserrat_24, 0);
-    lv_obj_align(statistics_label_stat, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(statistics_label_stat, "Stats coming soon...");
 }
 
-void statistics_screen_enter()
-{
-    lv_screen_load(statistics_scr);
+void MainScreen::on_long_press() {
+
 }
 
-void statistics_screen_render(int count)
+/*
+-------------------------------OPTIONS SCREEN-------------------------------
+*/
+
+void OptionsScreen::init()
 {
-    lv_label_set_text(statistics_label_stat, "Stats coming soon...");
+    options_scr = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(options_scr, lv_color_white(), 0);
+    lv_obj_set_style_bg_opa(options_scr, LV_OPA_COVER, 0);
+
+    options_label_1_text = lv_label_create(options_scr);
+    lv_label_set_long_mode(options_label_1_text, LV_LABEL_LONG_CLIP);
+    lv_obj_set_width(options_label_1_text, 150);
+    lv_obj_set_style_text_font(options_label_1_text, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(options_label_1_text, lv_color_black(), 0);
+    lv_obj_align(options_label_1_text, LV_ALIGN_LEFT_MID, 40, -15);
+    lv_label_set_text(options_label_1_text, "Option 1");
+
+    options_variable_1_text = lv_label_create(options_scr);
+    lv_label_set_long_mode(options_label_1_text, LV_LABEL_LONG_CLIP);
+    lv_obj_set_width(options_label_1_text, 150);
+    lv_obj_set_style_text_font(options_label_1_text, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(options_label_1_text, lv_color_black(), 0);
+    lv_obj_align(options_label_1_text, LV_ALIGN_LEFT_MID, 40, -15);
+    lv_label_set_text(options_label_1_text, "Option 1");
+
+    options_label_2_text = lv_label_create(options_scr);
+    lv_label_set_long_mode(options_label_2_text, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(options_label_2_text, 150);
+    lv_obj_set_style_text_font(options_label_2_text, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(options_label_2_text, lv_color_black(), 0);
+    lv_obj_align(options_label_2_text, LV_ALIGN_LEFT_MID, 40, 15);
+    lv_label_set_text(options_label_2_text, "Option 2");
 }
 
-screen_t statistics_screen = {
-    .enter = statistics_screen_enter,
-    .render = statistics_screen_render,
-};
+void OptionsScreen::enter()
+{
+    lv_screen_load(options_scr);
+}
 
+void OptionsScreen::render()
+{
+
+}
+
+void OptionsScreen::on_short_press() {
+
+}
+
+void OptionsScreen::on_long_press() {
+
+}
