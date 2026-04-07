@@ -1,6 +1,7 @@
 #include "display.h"
 
 #include <cstring>
+#include <initializer_list>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -19,25 +20,46 @@ static esp_lcd_panel_handle_t panel_handle = NULL;
 #define WAVESHARE_LEDC_DUTY_RESOLUTION LEDC_TIMER_13_BIT
 #define WAVESHARE_LEDC_MAX_DUTY ((1U << WAVESHARE_LEDC_DUTY_RESOLUTION) - 1U)
 
+#ifndef WAVESHARE_ST7789T_VCOM
+#define WAVESHARE_ST7789T_VCOM 0x35
+#endif
+
+// Temporary static-screen workaround: periodically redraws to mask static-panel artifacts.
+// Try setting this to 0 later; if glitches return, this is still a band-aid rather than the root fix.
+#ifndef WAVESHARE_STATIC_REFRESH_ENABLED
+#define WAVESHARE_STATIC_REFRESH_ENABLED 1
+#endif
+
+#ifndef WAVESHARE_STATIC_REFRESH_PERIOD_MS
+#define WAVESHARE_STATIC_REFRESH_PERIOD_MS 100
+#endif
+
+static void display_tx_param(uint8_t cmd, std::initializer_list<uint8_t> params)
+{
+    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, cmd, params.begin(), params.size()));
+}
+
 static void display_apply_waveshare_panel_init()
 {
     ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, LCD_CMD_SLPOUT, NULL, 0));
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0x36, (uint8_t[]) {0x00}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0x3A, (uint8_t[]) {0x55}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xB0, (uint8_t[]) {0x00, 0xE8}, 2));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xB2, (uint8_t[]) {0x0C, 0x0C, 0x00, 0x33, 0x33}, 5));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xB7, (uint8_t[]) {0x75}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xBB, (uint8_t[]) {0x1A}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xC0, (uint8_t[]) {0x80}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xC2, (uint8_t[]) {0x01, 0xFF}, 2));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xC3, (uint8_t[]) {0x13}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xC4, (uint8_t[]) {0x20}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xC6, (uint8_t[]) {0x0F}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xD0, (uint8_t[]) {0xA4, 0xA1}, 1));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xE0, (uint8_t[]) {0xD0, 0x0D, 0x14, 0x0D, 0x0D, 0x09, 0x38, 0x44, 0x4E, 0x3A, 0x17, 0x18, 0x2F, 0x30}, 14));
-    ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, 0xE1, (uint8_t[]) {0xD0, 0x09, 0x0F, 0x08, 0x07, 0x14, 0x37, 0x44, 0x4D, 0x38, 0x15, 0x16, 0x2C, 0x2E}, 14));
+    // MADCTL baseline from the currently stable panel state; later esp_lcd panel ops may rewrite this register.
+    display_tx_param(0x36, {0x08});
+    display_tx_param(0x3A, {0x05});
+    display_tx_param(0xB0, {0x00, 0xE8});
+    display_tx_param(0xB2, {0x0C, 0x0C, 0x00, 0x33, 0x33});
+    display_tx_param(0xB7, {0x35});
+    display_tx_param(0xBB, {static_cast<uint8_t>(WAVESHARE_ST7789T_VCOM)});
+    display_tx_param(0xC0, {0x2C});
+    display_tx_param(0xC2, {0x01});
+    display_tx_param(0xC3, {0x13});
+    display_tx_param(0xC4, {0x20});
+    display_tx_param(0xC6, {0x0F});
+    display_tx_param(0xD0, {0xA4, 0xA1});
+    display_tx_param(0xD6, {0xA1});
+    display_tx_param(0xE0, {0xF0, 0x00, 0x04, 0x04, 0x04, 0x05, 0x29, 0x33, 0x3E, 0x38, 0x12, 0x12, 0x28, 0x30});
+    display_tx_param(0xE1, {0xF0, 0x07, 0x0A, 0x0D, 0x0B, 0x07, 0x28, 0x33, 0x3E, 0x36, 0x14, 0x14, 0x29, 0x32});
     ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, LCD_CMD_INVON, NULL, 0));
     ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, LCD_CMD_DISPON, NULL, 0));
     ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, LCD_CMD_RAMWR, NULL, 0));
@@ -46,10 +68,22 @@ static void display_apply_waveshare_panel_init()
 static void display_set_waveshare_panel_mode()
 {
     ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(panel_handle, false));
-    ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, true, false));
+    ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, false, false));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
     ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 34, 0));
 }
+
+#if WAVESHARE_STATIC_REFRESH_ENABLED
+static void display_static_refresh_timer_cb(lv_timer_t *timer)
+{
+    (void)timer;
+
+    lv_obj_t *screen = lv_screen_active();
+    if (screen != NULL) {
+        lv_obj_invalidate(screen);
+    }
+}
+#endif
 
 static void display_spi_init()
 {
@@ -89,7 +123,7 @@ static void display_panel_init(void)
     esp_lcd_panel_dev_config_t panel_config = {};
 
     panel_config.reset_gpio_num = PIN_NUM_RST;
-    panel_config.color_space    = ESP_LCD_COLOR_SPACE_BGR;
+    panel_config.color_space    = ESP_LCD_COLOR_SPACE_RGB;
     panel_config.bits_per_pixel = 16;
 
     ESP_ERROR_CHECK(
@@ -159,7 +193,7 @@ static void display_lvgl_init()
     disp_cfg.vres          = LCD_V_RES;
     disp_cfg.color_format  = LV_COLOR_FORMAT_RGB565;
     // Native portrait diagnostic baseline to isolate rotation/gap issues.
-    disp_cfg.rotation.mirror_x = true;
+    disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = false;
     disp_cfg.rotation.swap_xy = false;
     disp_cfg.flags.buff_dma = true;
@@ -168,10 +202,18 @@ static void display_lvgl_init()
 
     lv_display_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
     ESP_ERROR_CHECK(disp_handle != NULL ? ESP_OK : ESP_FAIL);
-
-    lvgl_port_lock(portMAX_DELAY);
     lv_display_set_rotation(disp_handle, LV_DISPLAY_ROTATION_90);
+
+#if WAVESHARE_STATIC_REFRESH_ENABLED
+    lvgl_port_lock(portMAX_DELAY);
+    lv_timer_t *refresh_timer = lv_timer_create(
+        display_static_refresh_timer_cb,
+        WAVESHARE_STATIC_REFRESH_PERIOD_MS,
+        NULL
+    );
+    ESP_ERROR_CHECK(refresh_timer != NULL ? ESP_OK : ESP_FAIL);
     lvgl_port_unlock();
+#endif
 }
 
 void display_set_brightness(uint8_t percent)

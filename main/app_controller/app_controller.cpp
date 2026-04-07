@@ -1,6 +1,7 @@
 #include "app_controller.h"
 
 #include <ctime>
+#include <inttypes.h>
 #include "lvgl.h"
 #include "nvs_flash.h"
 #include "esp_log.h"
@@ -66,7 +67,7 @@ void AppController::app_task(void* pvParameters)
     app_wifi.init(self->getAppQueue());
     app_storage.init();
     app_storage.load_stats(&self->stats_);
-    ESP_LOGI(TAG, "Loaded total feeds: %d", self->stats_.tot_num_feeds);
+    ESP_LOGI(TAG, "Loaded total feeds: %" PRIu32, self->stats_.tot_num_feeds);
     
     app_event_t event;
     day_data_t temp_data = {
@@ -77,9 +78,13 @@ void AppController::app_task(void* pvParameters)
     lvgl_port_lock(0);
         self->current_screen_->enter();
     lvgl_port_unlock();
-    display_set_brightness(50); // %
+    display_set_brightness(30); // %
+
+    button_event_t btn_event = BTN_SHORT_PRESS;
 
     while(1) {
+        btn_cb(btn_event, (void*)self);
+        vTaskDelay(pdMS_TO_TICKS(50));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
             if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
                 ESP_LOGI(TAG, "BTN_SHORT_PRESS");
