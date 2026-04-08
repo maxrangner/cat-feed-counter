@@ -27,12 +27,20 @@ void AppController::init()
     }
     ESP_ERROR_CHECK(ret);
 
+    settings_ = {
+        .landscape_orientation = true,
+        .half_feed_steps = false,
+        .feed_interval = 3,
+        .animal = Animals::CAT,
+    };
+
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.init();
         options_screen_.init();
+        options_screen_.update_settings(settings_);
     lvgl_port_unlock();
 
-    current_screen_ = screens[0];
+    current_screen_ = screens[1];
     counter = 0;
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
@@ -75,39 +83,104 @@ void AppController::app_task(void* pvParameters)
     };
 
     app_storage.write_stats(&temp_data);
-    lvgl_port_lock(0);
-        self->current_screen_->enter();
+
+    lvgl_port_lock(portMAX_DELAY);
+        self->current_screen_->show();
     lvgl_port_unlock();
+
     display_set_brightness(30); // %
 
-    button_event_t btn_event = BTN_SHORT_PRESS;
-
     while(1) {
-        btn_cb(btn_event, (void*)self);
-        vTaskDelay(pdMS_TO_TICKS(50));
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
-            if (event.msg_event == AppEventType::DISPLAY_UPDATE) {
-                lvgl_port_lock(0);
-                    self->current_screen_->enter();
-                lvgl_port_unlock();
-            }
-            if (event.msg_event == AppEventType::BTN_SHORT_PRESS) {
-                ESP_LOGI(TAG, "BTN_SHORT_PRESS");
+            switch (event.msg_event) {
+                case AppEventType::BTN_SHORT_PRESS: {
+                    ESP_LOGI(TAG, "Received: BTN_SHORT_PRESS");
 
-            }
-            if (event.msg_event == AppEventType::BTN_LONG_PRESS) {
-                ESP_LOGI(TAG, "BTN_LONG_PRESS");
-                lvgl_port_lock(0);
-                    self->next_screen();
-                lvgl_port_unlock();
-                // app_wifi.connect();
-            }
-            if (event.msg_event == AppEventType::TIME_SYNC_STATUS) {
-                int64_t t = time(NULL);
-                ESP_LOGI(TAG, "TIME_SYNC_STATUS: %lld", t);
+                    ScreenAction action = self->current_screen_->on_short_press();
+                    self->handle_screen_action(action);
+                    break;
+                }
+                case AppEventType::BTN_LONG_PRESS: {
+                    ESP_LOGI(TAG, "Received: BTN_LONG_PRESS");
 
+                    lvgl_port_lock(portMAX_DELAY);
+                        // self->next_screen();
+                        self->current_screen_->on_long_press();
+                    lvgl_port_unlock();
+                    // app_wifi.connect();
+                    break;
+                }
+                case AppEventType::TIME_SYNC_STATUS: {
+                    ESP_LOGI(TAG, "Received: TIME_SYNC_STATUS");
+
+                    int64_t t = time(NULL);
+                    ESP_LOGI(TAG, "TIME_SYNC_STATUS: %lld", t);
+                    break;
+                }
+                default: break;
             }
         }
+    }
+}
+
+void AppController::handle_screen_action(ScreenAction action)
+{
+    switch (action) {
+        case ScreenAction::INCREMENT_FEEDS: {
+            ESP_LOGI(TAG, "handle_screen_action: INCREMENT_FEEDS");
+
+            counter++;
+            lvgl_port_lock(portMAX_DELAY);
+                main_screen_.update_count(counter);
+            lvgl_port_unlock();
+            break;
+        }
+        case ScreenAction::OPTION_1_ACTION: {
+            ESP_LOGI(TAG, "handle_screen_action: OPTION_1_ACTION");
+
+            settings_.landscape_orientation = !settings_.landscape_orientation;
+            lvgl_port_lock(portMAX_DELAY);
+                options_screen_.update_settings(settings_);
+            lvgl_port_unlock();
+            break;
+        }
+        case ScreenAction::OPTION_2_ACTION: {
+            ESP_LOGI(TAG, "handle_screen_action: OPTION_2_ACTION");
+
+            settings_.feed_interval = (settings_.feed_interval + 1) % 10;
+            if (settings_.feed_interval <= 1) {
+                settings_.feed_interval = 1;
+            }
+
+            lvgl_port_lock(portMAX_DELAY);
+                options_screen_.update_settings(settings_);
+            lvgl_port_unlock();
+            break;
+        }
+        case ScreenAction::OPTION_3_ACTION: {
+            ESP_LOGI(TAG, "handle_screen_action: OPTION_3_ACTION");
+
+            switch (settings_.animal) {
+                case Animals::CAT: {
+                    settings_.animal = Animals::DOG;
+                    break;
+                }
+                case Animals::DOG: {
+                    settings_.animal = Animals::HUMAN;
+                    break;
+                }
+                case Animals::HUMAN: {
+                    settings_.animal = Animals::CAT;
+                    break;
+                }
+            }
+
+            lvgl_port_lock(portMAX_DELAY);
+                options_screen_.update_settings(settings_);
+            lvgl_port_unlock();
+            break;
+        }
+        default: break;
     }
 }
 
@@ -138,10 +211,10 @@ QueueHandle_t AppController::getAppQueue()
 
 void AppController::next_screen()
 {
-    app_event_t event;
-    event.msg_event = AppEventType::DISPLAY_UPDATE;
     static uint8_t index = 0;
     index = (index + 1) % 2;
     current_screen_ = screens[index];
-    xQueueSend(in_queue_, &event, 0);
+    lvgl_port_lock(portMAX_DELAY);
+        current_screen_->show();
+    lvgl_port_unlock();
 }

@@ -7,7 +7,6 @@ enum class AppEventType {
     BTN_SHORT_PRESS,
     BTN_LONG_PRESS,
     TIME_SYNC_STATUS,
-    DISPLAY_UPDATE,
 };
 
 typedef struct {
@@ -15,8 +14,20 @@ typedef struct {
     union {
         WifiState wifi_state;
     };
-    
 } app_event_t;
+
+enum class Animals {
+    CAT,
+    DOG,
+    HUMAN
+};
+
+typedef struct {
+    bool landscape_orientation;
+    bool half_feed_steps;
+    uint8_t feed_interval;
+    Animals animal;
+} settings_t;
 
 typedef struct {
     uint32_t num_feeds;
