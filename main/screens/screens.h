@@ -9,7 +9,9 @@
 #include "app_types.h"
 
 enum class ScreenAction {
+    NONE,
     INCREMENT_FEEDS,
+    SAVE_DATA,
     OPTION_1_ACTION,
     OPTION_2_ACTION,
     OPTION_3_ACTION,
@@ -27,7 +29,7 @@ public:
     virtual void show() = 0;
     virtual void update() = 0;
     virtual ScreenAction on_short_press() = 0;
-    virtual void on_long_press() = 0;
+    virtual ScreenAction on_long_press() = 0;
 };
 
 class MainScreen : public Screen {
@@ -36,13 +38,13 @@ class MainScreen : public Screen {
     lv_obj_t* main_label_count;
     lv_obj_t* main_label_bar;
 
-    uint8_t counter = 0;
+    uint8_t counter_;
 public:
     void init() override;
     void show() override;
     void update() override;
     ScreenAction on_short_press() override;
-    void on_long_press() override;
+    ScreenAction on_long_press() override;
     void update_count(uint8_t count);
 };
 
@@ -67,7 +69,7 @@ public:
     void show() override;
     void update() override;
     ScreenAction on_short_press() override;
-    void on_long_press() override;
+    ScreenAction on_long_press() override;
     void update_settings(settings_t settings);
 };
 

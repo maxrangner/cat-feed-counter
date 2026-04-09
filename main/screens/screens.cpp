@@ -12,6 +12,7 @@ void MainScreen::init()
 
     main_label_text = lv_label_create(main_scr);
     lv_label_set_long_mode(main_label_text, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(main_label_text, 150);
     lv_obj_set_style_text_font(main_label_text, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(main_label_text, lv_color_black(), 0);
     lv_obj_align(main_label_text, LV_ALIGN_LEFT_MID, 20, -15);
@@ -21,7 +22,7 @@ void MainScreen::init()
     lv_obj_set_style_text_font(main_label_count, &lv_font_montserrat_48, 0);
     lv_obj_set_style_text_color(main_label_text, lv_color_black(), 0);
     lv_obj_align(main_label_count, LV_ALIGN_CENTER, 50, -15);
-    lv_label_set_text_fmt(main_label_count, "%d", counter);
+    lv_label_set_text_fmt(main_label_count, "%d", counter_);
 
     main_label_bar = lv_bar_create(main_scr);
     lv_obj_set_style_bg_color(main_label_bar, lv_palette_main(LV_PALETTE_RED), LV_PART_INDICATOR);
@@ -29,9 +30,9 @@ void MainScreen::init()
     lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_size(main_label_bar, 150, 20);
     lv_bar_set_range(main_label_bar, 0, 10);
-    lv_bar_set_value(main_label_bar, counter, LV_ANIM_ON);
+    lv_bar_set_value(main_label_bar, counter_, LV_ANIM_ON);
 
-    counter = 0;
+    counter_ = 0;
 }
 
 void MainScreen::show()
@@ -41,9 +42,8 @@ void MainScreen::show()
 
 void MainScreen::update()
 {
-    uint8_t count = 0;
-    lv_label_set_text_fmt(main_label_count, "%d", counter);
-    lv_bar_set_value(main_label_bar, counter, LV_ANIM_ON);
+    lv_label_set_text_fmt(main_label_count, "%d", counter_);
+    lv_bar_set_value(main_label_bar, counter_, LV_ANIM_ON);
 }
 
 ScreenAction MainScreen::on_short_press()
@@ -51,14 +51,14 @@ ScreenAction MainScreen::on_short_press()
     return ScreenAction::INCREMENT_FEEDS;
 }
 
-void MainScreen::on_long_press()
+ScreenAction MainScreen::on_long_press()
 {
-
+    return ScreenAction::SAVE_DATA;
 }
 
 void MainScreen::update_count(uint8_t count)
 {
-    counter = count;
+    counter_ = count;
     update();
 }
 
@@ -162,11 +162,12 @@ ScreenAction OptionsScreen::on_short_press()
     return action;
 }
 
-void OptionsScreen::on_long_press()
+ScreenAction OptionsScreen::on_long_press()
 {
     uint8_t index = (++selected_index_) % NUM_OPTIONS;
     selected_index_ = index;
     update();
+    return ScreenAction::NONE;
 }
 
 void OptionsScreen::update_settings(settings_t settings)

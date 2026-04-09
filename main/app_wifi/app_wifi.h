@@ -20,7 +20,7 @@ class AppWifi {
 public:
     AppWifi();
     void init(QueueHandle_t app_queue);
-    void connect();
+    void sync_time();
 };
 
 

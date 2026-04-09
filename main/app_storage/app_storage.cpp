@@ -27,6 +27,7 @@ void AppStorage::init()
 esp_err_t AppStorage::write_stats(day_data_t* data)
 {
     ESP_LOGI(TAG, "Opening file");
+
     FILE* file = fopen(file_path, "ab");
     if (file == NULL) {
         ESP_LOGE(TAG, "Failed to open file for writing");
@@ -34,7 +35,7 @@ esp_err_t AppStorage::write_stats(day_data_t* data)
     }
     fwrite(data, sizeof(day_data_t), 1, file);
     fclose(file);
-    // ESP_LOGI(TAG, "File written: STATS -------------> %d", data->num_feeds);
+    ESP_LOGI(TAG, "File written: STATS -------------> %lu", data->num_feeds);
 
     return ESP_OK;
 }

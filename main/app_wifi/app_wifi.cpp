@@ -56,7 +56,7 @@ void AppWifi::wifi_event_cb(void* arg, esp_event_base_t event_base, int32_t even
             Trigger reconnect or port event: time_sync_failed
 
             app_event_t packet;
-            packet.msg_event = AppEventType::TIME_SYNC_STATUS;
+            packet.msg_event = AppEventType::TIME_SYNCED;
 
             timer = xTimerCreate(
                 "btn_timer",
@@ -79,7 +79,6 @@ void AppWifi::wifi_event_cb(void* arg, esp_event_base_t event_base, int32_t even
                 1,
                 NULL
             );
-
         }
     }
 }
@@ -90,7 +89,7 @@ void AppWifi::snpt_task(void* pvParameters)
 
     ESP_LOGI(TAG, "Enter snpt_task");
     app_event_t package;
-    package.msg_event = AppEventType::TIME_SYNC_STATUS;
+    package.msg_event = AppEventType::TIME_SYNCED;
 
     esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
     esp_netif_sntp_init(&config);
@@ -107,7 +106,7 @@ void AppWifi::snpt_task(void* pvParameters)
     vTaskDelete(NULL);
 }
 
-void AppWifi::connect()
+void AppWifi::sync_time()
 {
     ESP_ERROR_CHECK(esp_wifi_start());
     esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
