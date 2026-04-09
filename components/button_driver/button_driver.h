@@ -35,6 +35,7 @@ typedef struct {
     void* user_data;
 } button_cfg_t;
 
+void button_service_init();
 void button_init(const button_cfg_t* cfg, button_t* button_handle);
 
 #ifdef __cplusplus

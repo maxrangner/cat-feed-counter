@@ -31,7 +31,7 @@ void button_timer_cb(TimerHandle_t xTimer)
         }
         uint64_t pressed_time = (now - handle->press_time) / 1000;
         ESP_LOGI(TAG, "Button pressed for %lld ms", pressed_time);
-        if (pressed_time > handle->long_press_dur) {
+        if (pressed_time >= handle->long_press_dur) {
             event = BTN_LONG_PRESS;
             handle->btn_callback(event, handle->user_data);
         } else {
@@ -39,6 +39,14 @@ void button_timer_cb(TimerHandle_t xTimer)
             handle->btn_callback(event, handle->user_data);
         }
         handle->press_time = 0;
+    }
+}
+
+void button_service_init()
+{
+    esp_err_t err = gpio_install_isr_service(0);
+    if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
+        ESP_ERROR_CHECK(err);
     }
 }
 
@@ -52,9 +60,7 @@ void button_init(const button_cfg_t* cfg, button_t* button_handle)
         .pull_up_en = cfg->hasPullup ? GPIO_PULLUP_ENABLE : GPIO_PULLUP_DISABLE,
     };
     gpio_config(&io_config);
-    gpio_install_isr_service(0);
-    gpio_isr_handler_add(cfg->gpio_num, button_isr, button_handle);
-
+    
     button_handle->gpio_num = cfg->gpio_num;
     button_handle->pressed_level = cfg->hasPullup ? 0 : 1;
     button_handle->current_edge = (gpio_num_t)gpio_get_level(button_handle->gpio_num);
@@ -69,4 +75,6 @@ void button_init(const button_cfg_t* cfg, button_t* button_handle)
         button_timer_cb
     );
     button_handle->press_time = 0;
+
+    gpio_isr_handler_add(cfg->gpio_num, button_isr, button_handle);
 }

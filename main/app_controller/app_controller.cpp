@@ -54,10 +54,11 @@ void AppController::init()
         &task_app_controller_
     );
 
+    button_service_init();
     button_cfg_t btn_cfg = {
         .gpio_num = 9,
         .hasPullup = true,
-        .debounce = 50,
+        .debounce = 25,
         .long_press_dur = 500,
         .btn_callback = btn_cb,
         .user_data = this,
