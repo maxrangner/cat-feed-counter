@@ -14,8 +14,20 @@ typedef struct {
     union {
         WifiState wifi_state;
     };
-    
 } app_event_t;
+
+enum class Animals {
+    CAT,
+    DOG,
+    HUMAN
+};
+
+typedef struct {
+    bool landscape_orientation;
+    bool half_feed_steps;
+    uint8_t feed_interval;
+    Animals animal;
+} settings_t;
 
 typedef struct {
     uint32_t num_feeds;
