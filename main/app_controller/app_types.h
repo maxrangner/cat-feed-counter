@@ -3,6 +3,8 @@
 
 #include "app_wifi.h"
 
+#include "lvgl.h"
+
 enum class AppEventType {
     BTN_SHORT_PRESS,
     BTN_LONG_PRESS,
@@ -16,17 +18,12 @@ typedef struct {
     };
 } app_event_t;
 
-enum class Animals {
-    CAT,
-    DOG,
-    HUMAN
-};
-
 typedef struct {
     bool landscape_orientation;
+    uint8_t brightness;
     bool half_feed_steps;
     uint8_t feed_interval;
-    Animals animal;
+    lv_display_rotation_t display_rotation;
 } settings_t;
 
 typedef struct {

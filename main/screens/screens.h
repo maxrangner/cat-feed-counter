@@ -12,9 +12,9 @@ enum class ScreenAction {
     NONE,
     INCREMENT_FEEDS,
     SAVE_DATA,
-    OPTION_1_ACTION,
-    OPTION_2_ACTION,
-    OPTION_3_ACTION,
+    CHANGE_BRIGHTNESS,
+    INCREMENT_FEED_INTERVAL,
+    ROTATE_DISPLAY,
 };
 
 typedef struct {
@@ -49,21 +49,29 @@ public:
 };
 
 class OptionsScreen : public Screen {
-    lv_obj_t* options_scr;
-    lv_obj_t* options_label_1_text;
-    lv_obj_t* options_variable_1_text;
-    lv_obj_t* options_label_2_text;
-    lv_obj_t* options_variable_2_text;
-    lv_obj_t* options_label_3_text;
-    lv_obj_t* options_variable_3_text;
+    lv_obj_t* options_scr_;
+
+    lv_obj_t* brightness_title_label_;
+    lv_obj_t* brightness_value_label_;
+
+    lv_obj_t* feed_interval_title_label_;
+    lv_obj_t* feed_interval_value_label_;
+
+    lv_obj_t* screen_orientation_title_label_;
+    lv_obj_t* screen_orientation_value_label_;
 
     settings_t settings_;
 
-    options_t option_1_;
-    options_t option_2_;
-    options_t option_3_;
+    options_t option_brightness_;
+    options_t option_feed_interval_;
+    options_t option_screen_orientation_;
     uint8_t selected_index_ = 0;
-    options_t* options_[NUM_OPTIONS] = {&option_1_, &option_2_, &option_3_};
+    
+    options_t* options_[NUM_OPTIONS] = {
+        &option_brightness_,
+        &option_feed_interval_,
+        &option_screen_orientation_
+    };
 public:
     void init() override;
     void show() override;

@@ -28,6 +28,7 @@ class AppController {
     AppStorage app_storage_;
     app_state_t app_state_;
     button_t btn_;
+
     MainScreen main_screen_;
     OptionsScreen options_screen_;
     Screen* screens[NUM_SCREENS] = {&main_screen_, &options_screen_};
@@ -37,9 +38,9 @@ class AppController {
     void next_screen();
     void increment_count();
     void save_data();
-    void option_1_action();
-    void option_2_action();
-    void option_3_action();
+    void change_brightness();
+    void increment_feed_interval();
+    void rotate_display();
 public:
     AppController();
     void init();

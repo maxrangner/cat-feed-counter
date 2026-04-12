@@ -33,12 +33,13 @@ void AppController::init()
 
     app_state_.settings = {
         .landscape_orientation = true,
+        .brightness = 30,
         .half_feed_steps = false,
         .feed_interval = 3,
-        .animal = Animals::CAT,
+        .display_rotation = LV_DISPLAY_ROTATION_90,
     };
     app_state_.stats.tot_num_feeds = 0;
-    app_state_.current_screen = screens[0];
+    app_state_.current_screen = screens[1];
     app_state_.today.num_feeds = 0;
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
@@ -108,9 +109,9 @@ void AppController::handle_app_events(app_event_t event)
     switch (action) {
         case ScreenAction::INCREMENT_FEEDS: increment_count(); break;
         case ScreenAction::SAVE_DATA: save_data(); break;
-        case ScreenAction::OPTION_1_ACTION: option_1_action(); break;
-        case ScreenAction::OPTION_2_ACTION: option_2_action(); break;
-        case ScreenAction::OPTION_3_ACTION: option_2_action(); break;
+        case ScreenAction::CHANGE_BRIGHTNESS: change_brightness(); break;
+        case ScreenAction::INCREMENT_FEED_INTERVAL: increment_feed_interval(); break;
+        case ScreenAction::ROTATE_DISPLAY: rotate_display(); break;
         default: break;
     }
 }
@@ -125,13 +126,8 @@ void btn_cb(button_event_t btn_event, void* user_data)
     AppController *self = (AppController *)user_data;
 
     app_event_t event;
-
-    if (btn_event == BTN_SHORT_PRESS) {
-        event.msg_event = AppEventType::BTN_SHORT_PRESS;
-    }
-    if (btn_event == BTN_LONG_PRESS) {
-        event.msg_event = AppEventType::BTN_LONG_PRESS;
-    }
+    if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SHORT_PRESS;
+    if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_LONG_PRESS;
     self->post_event(event);
 }
 
@@ -155,7 +151,20 @@ void AppController::next_screen()
 void AppController::reset_day()
 {
     ESP_LOGI(TAG, "reset_day()");
+
     app_state_.today.num_feeds = 0;
+}
+
+void AppController::save_data()
+{
+    ESP_LOGI(TAG, "save_data()");
+
+    app_storage_.write_stats(&app_state_.today);
+    reset_day();
+
+    lvgl_port_lock(portMAX_DELAY);
+        main_screen_.update_count(0);
+    lvgl_port_unlock();
 }
 
 void AppController::increment_count()
@@ -169,30 +178,25 @@ void AppController::increment_count()
     lvgl_port_unlock();
 }
 
-void AppController::save_data()
+void AppController::change_brightness()
 {
-    ESP_LOGI(TAG, "save_data()");
+    ESP_LOGI(TAG, "change_brightness()");
 
-    app_storage_.write_stats(&app_state_.today);
-    reset_day();
-    lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_count(0);
-    lvgl_port_unlock();
-}
-
-void AppController::option_1_action()
-{
-    ESP_LOGI(TAG, "option_1_action()");
-
-    app_state_.settings.landscape_orientation = !app_state_.settings.landscape_orientation;
+    app_state_.settings.brightness += 10;
+    if (app_state_.settings.brightness > 70) {
+        app_state_.settings.brightness = 10;
+    }
+    
     lvgl_port_lock(portMAX_DELAY);
         options_screen_.update_settings(app_state_.settings);
     lvgl_port_unlock();
+    
+    display_set_brightness(app_state_.settings.brightness);
 }
 
-void AppController::option_2_action()
+void AppController::increment_feed_interval()
 {
-    ESP_LOGI(TAG, "option_2_action()");
+    ESP_LOGI(TAG, "increment_feed_interval()");
 
     app_state_.settings.feed_interval = (app_state_.settings.feed_interval + 1) % 10;
     if (app_state_.settings.feed_interval <= 1) {
@@ -204,26 +208,21 @@ void AppController::option_2_action()
     lvgl_port_unlock();
 }
 
-void AppController::option_3_action()
+void AppController::rotate_display()
 {
-    ESP_LOGI(TAG, "option_3_action()");
+    ESP_LOGI(TAG, "rotate_display()");
 
-    switch (app_state_.settings.animal) {
-        case Animals::CAT: {
-            app_state_.settings.animal = Animals::DOG;
-            break;
-        }
-        case Animals::DOG: {
-            app_state_.settings.animal = Animals::HUMAN;
-            break;
-        }
-        case Animals::HUMAN: {
-            app_state_.settings.animal = Animals::CAT;
-            break;
-        }
+    switch (app_state_.settings.display_rotation) {
+        case LV_DISPLAY_ROTATION_0: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_90; break;
+        case LV_DISPLAY_ROTATION_90: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_180; break;
+        case LV_DISPLAY_ROTATION_180: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_270; break;
+        case LV_DISPLAY_ROTATION_270:
+        default: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_0; break;
     }
 
     lvgl_port_lock(portMAX_DELAY);
         options_screen_.update_settings(app_state_.settings);
+        display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
+
 }

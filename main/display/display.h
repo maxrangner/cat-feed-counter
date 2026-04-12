@@ -6,10 +6,6 @@
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
 
-// =============================================================================
-// Pin definitions — Waveshare ESP32-C6-LCD-1.47
-// =============================================================================
-
 #define PIN_NUM_MOSI 6
 #define PIN_NUM_CLK  7
 #define PIN_NUM_CS   14
@@ -23,5 +19,6 @@
 
 void display_init();
 void display_set_brightness(uint8_t percent);
+void display_set_rotation(lv_display_rotation_t rotation);
 
 #endif

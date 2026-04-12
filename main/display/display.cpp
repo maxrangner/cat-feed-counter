@@ -16,6 +16,7 @@
 
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
+static lv_display_t* disp_handle = NULL;
 
 #define WAVESHARE_LEDC_DUTY_RESOLUTION LEDC_TIMER_13_BIT
 #define WAVESHARE_LEDC_MAX_DUTY ((1U << WAVESHARE_LEDC_DUTY_RESOLUTION) - 1U)
@@ -200,7 +201,7 @@ static void display_lvgl_init()
     disp_cfg.flags.swap_bytes = false;
     disp_cfg.flags.sw_rotate = true;
 
-    lv_display_t *disp_handle = lvgl_port_add_disp(&disp_cfg);
+    disp_handle = lvgl_port_add_disp(&disp_cfg);
     ESP_ERROR_CHECK(disp_handle != NULL ? ESP_OK : ESP_FAIL);
     lv_display_set_rotation(disp_handle, LV_DISPLAY_ROTATION_90);
 
@@ -218,17 +219,18 @@ static void display_lvgl_init()
 
 void display_set_brightness(uint8_t percent)
 {
-    if (percent > 100) {
-        percent = 100;
-    }
+    if (percent > 100) percent = 100;
 
     uint32_t duty = WAVESHARE_LEDC_MAX_DUTY - (81U * (100U - percent));
-    if (percent == 0) {
-        duty = 0;
-    }
+    if (percent == 0) duty = 0;
 
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty));
     ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
+}
+
+void display_set_rotation(lv_display_rotation_t rotation)
+{
+    lv_display_set_rotation(disp_handle, rotation);
 }
 
 void display_init()

@@ -68,65 +68,65 @@ void MainScreen::update_count(uint8_t count)
 
 void OptionsScreen::init()
 {
-    options_scr = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(options_scr, lv_color_white(), 0);
-    lv_obj_set_style_bg_opa(options_scr, LV_OPA_COVER, 0);
+    options_scr_ = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(options_scr_, lv_color_white(), 0);
+    lv_obj_set_style_bg_opa(options_scr_, LV_OPA_COVER, 0);
 
-    options_label_1_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_label_1_text, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(options_label_1_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_label_1_text, lv_palette_main(LV_PALETTE_RED), 0);
-    lv_obj_align(options_label_1_text, LV_ALIGN_LEFT_MID, 30, -35);
-    lv_label_set_text(options_label_1_text, "Landscape:");
+    brightness_title_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(brightness_title_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_font(brightness_title_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(brightness_title_label_, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_align(brightness_title_label_, LV_ALIGN_LEFT_MID, 30, -35);
+    lv_label_set_text(brightness_title_label_, "Brightness:");
 
-    options_variable_1_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_variable_1_text, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(options_variable_1_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_variable_1_text, lv_color_black(), 0);
-    lv_obj_align(options_variable_1_text, LV_ALIGN_LEFT_MID, 210, -35);
+    brightness_value_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(brightness_value_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_font(brightness_value_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(brightness_value_label_, lv_color_black(), 0);
+    lv_obj_align(brightness_value_label_, LV_ALIGN_LEFT_MID, 210, -35);
 
-    options_label_2_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_label_2_text, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(options_label_2_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_label_2_text, lv_color_black(), 0);
-    lv_obj_align(options_label_2_text, LV_ALIGN_LEFT_MID, 30, 0);
-    lv_label_set_text(options_label_2_text, "Feed interval:");
+    feed_interval_title_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(feed_interval_title_label_, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_font(feed_interval_title_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(feed_interval_title_label_, lv_color_black(), 0);
+    lv_obj_align(feed_interval_title_label_, LV_ALIGN_LEFT_MID, 30, 0);
+    lv_label_set_text(feed_interval_title_label_, "Feed interval:");
 
-    options_variable_2_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_variable_2_text, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(options_variable_2_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_variable_2_text, lv_color_black(), 0);
-    lv_obj_align(options_variable_2_text, LV_ALIGN_LEFT_MID, 210, 0);
+    feed_interval_value_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(feed_interval_value_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_font(feed_interval_value_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(feed_interval_value_label_, lv_color_black(), 0);
+    lv_obj_align(feed_interval_value_label_, LV_ALIGN_LEFT_MID, 210, 0);
 
-    options_label_3_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_label_3_text, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(options_label_3_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_label_3_text, lv_color_black(), 0);
-    lv_obj_align(options_label_3_text, LV_ALIGN_LEFT_MID, 30, 35);
-    lv_label_set_text(options_label_3_text, "Animal:");
+    screen_orientation_title_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(screen_orientation_title_label_, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_font(screen_orientation_title_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(screen_orientation_title_label_, lv_color_black(), 0);
+    lv_obj_align(screen_orientation_title_label_, LV_ALIGN_LEFT_MID, 30, 35);
+    lv_label_set_text(screen_orientation_title_label_, "Rotate display:");
 
-    options_variable_3_text = lv_label_create(options_scr);
-    lv_label_set_long_mode(options_variable_3_text, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(options_variable_3_text, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(options_variable_3_text, lv_color_black(), 0);
-    lv_obj_align(options_variable_3_text, LV_ALIGN_LEFT_MID, 210, 35);
+    screen_orientation_value_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(screen_orientation_value_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_font(screen_orientation_value_label_, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_color(screen_orientation_value_label_, lv_color_black(), 0);
+    lv_obj_align(screen_orientation_value_label_, LV_ALIGN_LEFT_MID, 210, 35);
 
-    option_1_.label = options_label_1_text;
-    option_1_.label_state = options_variable_1_text;
-    option_1_.action = ScreenAction::OPTION_1_ACTION;
+    option_brightness_.label = brightness_title_label_;
+    option_brightness_.label_state = brightness_value_label_;
+    option_brightness_.action = ScreenAction::CHANGE_BRIGHTNESS;
 
-    option_2_.label = options_label_2_text;
-    option_2_.label_state = options_variable_2_text;
-    option_2_.action = ScreenAction::OPTION_2_ACTION;
+    option_feed_interval_.label = feed_interval_title_label_;
+    option_feed_interval_.label_state = feed_interval_value_label_;
+    option_feed_interval_.action = ScreenAction::INCREMENT_FEED_INTERVAL;
 
-    option_3_.label = options_label_3_text;
-    option_3_.label_state = options_variable_3_text;
-    option_3_.action = ScreenAction::OPTION_3_ACTION;
+    option_screen_orientation_.label = screen_orientation_title_label_;
+    option_screen_orientation_.label_state = screen_orientation_value_label_;
+    option_screen_orientation_.action = ScreenAction::ROTATE_DISPLAY;
 }
 
 void OptionsScreen::show()
 {
-    lv_screen_load(options_scr);
+    lv_screen_load(options_scr_);
 }
 
 void OptionsScreen::update()
@@ -138,21 +138,15 @@ void OptionsScreen::update()
             lv_obj_set_style_text_color(options_[i]->label, lv_color_black(), 0); 
         }
     }
-    lv_label_set_text_fmt(options_variable_1_text, "%s", (settings_.landscape_orientation ? "TRUE" : "FALSE"));
-    lv_label_set_text_fmt(options_variable_2_text, "%d hrs", settings_.feed_interval);
-    switch (settings_.animal) {
-        case Animals::CAT: {
-            lv_label_set_text(options_variable_3_text, "cat");
-            break;
-        }
-        case Animals::DOG: {
-            lv_label_set_text(options_variable_3_text, "dog");
-            break;
-        }
-        case Animals::HUMAN: {
-            lv_label_set_text(options_variable_3_text, "human");
-            break;
-        }
+    lv_label_set_text_fmt(brightness_value_label_, "%d", settings_.brightness);
+    lv_label_set_text_fmt(feed_interval_value_label_, "%d hrs", settings_.feed_interval);
+    lv_label_set_text_fmt(screen_orientation_value_label_, "%s", (settings_.landscape_orientation ? "TRUE" : "FALSE"));
+
+    switch (settings_.display_rotation) {
+        case LV_DISPLAY_ROTATION_0: lv_label_set_text(screen_orientation_value_label_, "0"); break;
+        case LV_DISPLAY_ROTATION_90: lv_label_set_text(screen_orientation_value_label_, "90"); break;
+        case LV_DISPLAY_ROTATION_180: lv_label_set_text(screen_orientation_value_label_, "180"); break;
+        case LV_DISPLAY_ROTATION_270: lv_label_set_text(screen_orientation_value_label_, "270"); break;
     }
 }
 
