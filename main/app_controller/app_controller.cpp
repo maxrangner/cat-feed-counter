@@ -32,7 +32,6 @@ void AppController::init()
     button_service_init();
 
     app_state_.settings = {
-        .landscape_orientation = true,
         .brightness = 30,
         .half_feed_steps = false,
         .feed_interval = 3,
@@ -47,7 +46,8 @@ void AppController::init()
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.init();
         options_screen_.init();
-        options_screen_.update_settings(app_state_.settings);
+        main_screen_.update_ui_state(app_state_);
+        options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 
     xTaskCreate(
@@ -82,7 +82,7 @@ void AppController::app_task(void* pvParameters)
     app_event_t event;
     
     lvgl_port_lock(portMAX_DELAY);
-        self->main_screen_.update_count(self->app_state_.stats.tot_num_feeds);
+        self->main_screen_.update_ui_state(self->app_state_);
         self->app_state_.current_screen->show();
     lvgl_port_unlock();
 
@@ -163,7 +163,7 @@ void AppController::save_data()
     reset_day();
 
     lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_count(0);
+        main_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 }
 
@@ -174,7 +174,7 @@ void AppController::increment_count()
     app_state_.today.num_feeds++;
 
     lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_count(app_state_.today.num_feeds);
+        main_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 }
 
@@ -188,7 +188,7 @@ void AppController::change_brightness()
     }
     
     lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_settings(app_state_.settings);
+        options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
     
     display_set_brightness(app_state_.settings.brightness);
@@ -204,7 +204,7 @@ void AppController::increment_feed_interval()
     }
 
     lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_settings(app_state_.settings);
+        options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 }
 
@@ -221,7 +221,7 @@ void AppController::rotate_display()
     }
 
     lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_settings(app_state_.settings);
+        options_screen_.update_ui_state(app_state_);
         display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
 

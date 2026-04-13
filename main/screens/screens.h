@@ -18,18 +18,29 @@ enum class ScreenAction {
 };
 
 typedef struct {
+    uint8_t count;
+    uint8_t feed_interval;
+    bool half_feed_steps;
+    uint8_t brightness;
+    lv_display_rotation_t screen_orientation;
+} ui_state_t;
+
+typedef struct {
     lv_obj_t* label;
     lv_obj_t* label_state;
     ScreenAction action;
 } options_t;
 
 class Screen {
+protected:
+    ui_state_t ui_state_;
 public:
     virtual void init() = 0;
     virtual void show() = 0;
     virtual void update() = 0;
     virtual ScreenAction on_short_press() = 0;
     virtual ScreenAction on_long_press() = 0;
+    void update_ui_state(const app_state_t& state);
 };
 
 class MainScreen : public Screen {
@@ -37,15 +48,12 @@ class MainScreen : public Screen {
     lv_obj_t* main_label_text;
     lv_obj_t* main_label_count;
     lv_obj_t* main_label_bar;
-
-    uint8_t counter_;
 public:
     void init() override;
     void show() override;
     void update() override;
     ScreenAction on_short_press() override;
     ScreenAction on_long_press() override;
-    void update_count(uint8_t count);
 };
 
 class OptionsScreen : public Screen {
@@ -59,8 +67,6 @@ class OptionsScreen : public Screen {
 
     lv_obj_t* screen_orientation_title_label_;
     lv_obj_t* screen_orientation_value_label_;
-
-    settings_t settings_;
 
     options_t option_brightness_;
     options_t option_feed_interval_;
@@ -78,7 +84,6 @@ public:
     void update() override;
     ScreenAction on_short_press() override;
     ScreenAction on_long_press() override;
-    void update_settings(settings_t settings);
 };
 
 #endif

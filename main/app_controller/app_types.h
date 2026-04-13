@@ -5,6 +5,8 @@
 
 #include "lvgl.h"
 
+class Screen;
+
 enum class AppEventType {
     BTN_SHORT_PRESS,
     BTN_LONG_PRESS,
@@ -19,7 +21,6 @@ typedef struct {
 } app_event_t;
 
 typedef struct {
-    bool landscape_orientation;
     uint8_t brightness;
     bool half_feed_steps;
     uint8_t feed_interval;
@@ -33,5 +34,12 @@ typedef struct {
 typedef struct {
     uint32_t tot_num_feeds;
 } stats_t;
+
+typedef struct {
+    settings_t settings;
+    stats_t stats;
+    Screen* current_screen;
+    day_data_t today;
+} app_state_t;
 
 #endif

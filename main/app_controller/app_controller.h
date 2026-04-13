@@ -13,13 +13,6 @@
 #include "button_driver.h"
 #include "app_storage.h"
 
-typedef struct {
-    settings_t settings;
-    stats_t stats;
-    Screen* current_screen;
-    day_data_t today;
-} app_state_t;
-
 class AppController {
     TaskHandle_t task_app_controller_ = nullptr;
     QueueHandle_t in_queue_ = nullptr;

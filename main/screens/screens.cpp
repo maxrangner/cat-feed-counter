@@ -1,11 +1,28 @@
 #include "screens.h"
 
+void Screen::update_ui_state(const app_state_t& state)
+{
+    ui_state_.brightness = state.settings.brightness;
+    ui_state_.feed_interval = state.settings.feed_interval;
+    ui_state_.half_feed_steps = state.settings.half_feed_steps;
+    ui_state_.screen_orientation = state.settings.display_rotation;
+    ui_state_.count = state.today.num_feeds;
+    
+    update();
+}
+
 /*
 -------------------------------MAIN SCREEN-------------------------------
 */
 
 void MainScreen::init()
 {
+    ui_state_.brightness = 30;
+    ui_state_.feed_interval = 1;
+    ui_state_.half_feed_steps = false;
+    ui_state_.screen_orientation = LV_DISPLAY_ROTATION_0;
+    ui_state_.count = 0;
+
     main_scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(main_scr, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(main_scr, LV_OPA_COVER, 0);
@@ -22,7 +39,7 @@ void MainScreen::init()
     lv_obj_set_style_text_font(main_label_count, &lv_font_montserrat_48, 0);
     lv_obj_set_style_text_color(main_label_text, lv_color_black(), 0);
     lv_obj_align(main_label_count, LV_ALIGN_CENTER, 50, -15);
-    lv_label_set_text_fmt(main_label_count, "%d", counter_);
+    lv_label_set_text_fmt(main_label_count, "%d", ui_state_.count);
 
     main_label_bar = lv_bar_create(main_scr);
     lv_obj_set_style_bg_color(main_label_bar, lv_palette_main(LV_PALETTE_RED), LV_PART_INDICATOR);
@@ -30,9 +47,7 @@ void MainScreen::init()
     lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_size(main_label_bar, 150, 20);
     lv_bar_set_range(main_label_bar, 0, 10);
-    lv_bar_set_value(main_label_bar, counter_, LV_ANIM_ON);
-
-    counter_ = 0;
+    lv_bar_set_value(main_label_bar, ui_state_.count, LV_ANIM_ON);
 }
 
 void MainScreen::show()
@@ -42,8 +57,8 @@ void MainScreen::show()
 
 void MainScreen::update()
 {
-    lv_label_set_text_fmt(main_label_count, "%d", counter_);
-    lv_bar_set_value(main_label_bar, counter_, LV_ANIM_ON);
+    lv_label_set_text_fmt(main_label_count, "%d", ui_state_.count);
+    lv_bar_set_value(main_label_bar, ui_state_.count, LV_ANIM_ON);
 }
 
 ScreenAction MainScreen::on_short_press()
@@ -56,18 +71,18 @@ ScreenAction MainScreen::on_long_press()
     return ScreenAction::SAVE_DATA;
 }
 
-void MainScreen::update_count(uint8_t count)
-{
-    counter_ = count;
-    update();
-}
-
 /*
 -------------------------------OPTIONS SCREEN-------------------------------
 */
 
 void OptionsScreen::init()
 {
+    ui_state_.brightness = 30;
+    ui_state_.feed_interval = 1;
+    ui_state_.half_feed_steps = false;
+    ui_state_.screen_orientation = LV_DISPLAY_ROTATION_0;
+    ui_state_.count = 0;
+
     options_scr_ = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(options_scr_, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(options_scr_, LV_OPA_COVER, 0);
@@ -138,11 +153,9 @@ void OptionsScreen::update()
             lv_obj_set_style_text_color(options_[i]->label, lv_color_black(), 0); 
         }
     }
-    lv_label_set_text_fmt(brightness_value_label_, "%d", settings_.brightness);
-    lv_label_set_text_fmt(feed_interval_value_label_, "%d hrs", settings_.feed_interval);
-    lv_label_set_text_fmt(screen_orientation_value_label_, "%s", (settings_.landscape_orientation ? "TRUE" : "FALSE"));
-
-    switch (settings_.display_rotation) {
+    lv_label_set_text_fmt(brightness_value_label_, "%d", ui_state_.brightness);
+    lv_label_set_text_fmt(feed_interval_value_label_, "%d hrs", ui_state_.feed_interval);
+    switch (ui_state_.screen_orientation) {
         case LV_DISPLAY_ROTATION_0: lv_label_set_text(screen_orientation_value_label_, "0"); break;
         case LV_DISPLAY_ROTATION_90: lv_label_set_text(screen_orientation_value_label_, "90"); break;
         case LV_DISPLAY_ROTATION_180: lv_label_set_text(screen_orientation_value_label_, "180"); break;
@@ -162,10 +175,4 @@ ScreenAction OptionsScreen::on_long_press()
     selected_index_ = index;
     update();
     return ScreenAction::NONE;
-}
-
-void OptionsScreen::update_settings(settings_t settings)
-{
-    settings_ = settings;
-    update();
 }
