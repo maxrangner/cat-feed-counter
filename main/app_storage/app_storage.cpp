@@ -10,12 +10,11 @@ AppStorage::AppStorage() : s_wl_handle(WL_INVALID_HANDLE) {}
 void AppStorage::init()
 {
     ESP_LOGI(TAG, "Mounting FAT filesystem");
-    const esp_vfs_fat_mount_config_t mount_config = {
-            .format_if_mount_failed = true,
-            .max_files = 4,
-            .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
-            .use_one_fat = false,
-    };
+    esp_vfs_fat_mount_config_t mount_config = {};
+    mount_config.format_if_mount_failed = true;
+    mount_config.max_files = 4;
+    mount_config.allocation_unit_size = CONFIG_WL_SECTOR_SIZE;
+    mount_config.use_one_fat = false;
 
     ESP_LOGI(TAG, "Free heap: %lu", esp_get_free_heap_size());
     esp_err_t err = esp_vfs_fat_spiflash_mount_rw_wl(base_path, "storage", &mount_config, &s_wl_handle);
