@@ -8,9 +8,9 @@
 #include "esp_pm.h"
 
 #include "display.h"
+#include "config.h"
 
 
-static const char *TAG = "app_controller";
 static void btn_cb(button_event_t btn_event, void* user_data);
 
 static void nvs_init()
@@ -32,7 +32,7 @@ void AppController::init()
     button_service_init();
 
     app_state_.settings = {
-        .brightness = 30,
+        .brightness = DEFAULT_BRIGHTNESS,
         .half_feed_steps = false,
         .feed_interval = 3,
         .display_rotation = LV_DISPLAY_ROTATION_90,
@@ -80,13 +80,13 @@ void AppController::app_task(void* pvParameters)
     self->app_storage_.load_stats(&self->app_state_.stats);
 
     app_event_t event;
-    
+
     lvgl_port_lock(portMAX_DELAY);
         self->main_screen_.update_ui_state(self->app_state_);
         self->app_state_.current_screen->show();
     lvgl_port_unlock();
 
-    display_set_brightness(30); // %
+    display_set_brightness(self->app_state_.settings.brightness);
 
     while(1) {
         if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
@@ -100,9 +100,17 @@ void AppController::handle_app_events(app_event_t event)
     ScreenAction action = ScreenAction::NONE;
 
     switch (event.msg_event) {
-        case AppEventType::BTN_SHORT_PRESS: action = app_state_.current_screen->on_short_press(); break;
-        case AppEventType::BTN_LONG_PRESS: action = app_state_.current_screen->on_long_press(); break;
-        case AppEventType::TIME_SYNCED: ESP_LOGI(TAG, "TIME_SYNCED: %lld", (uint64_t)time(NULL)); break;
+        case AppEventType::BTN_SHORT_PRESS:
+            lvgl_port_lock(portMAX_DELAY);
+                action = app_state_.current_screen->on_short_press();
+            lvgl_port_unlock();
+            break;
+        case AppEventType::BTN_LONG_PRESS:
+            lvgl_port_lock(portMAX_DELAY);
+                action = app_state_.current_screen->on_long_press();
+            lvgl_port_unlock();
+            break;
+        case AppEventType::TIME_SYNCED: break;
         default: break;
     }
 
@@ -170,7 +178,7 @@ void AppController::save_data()
 void AppController::increment_count()
 {
     ESP_LOGI(TAG, "increment_count()");
-    
+
     app_state_.today.num_feeds++;
 
     lvgl_port_lock(portMAX_DELAY);
@@ -182,15 +190,15 @@ void AppController::change_brightness()
 {
     ESP_LOGI(TAG, "change_brightness()");
 
-    app_state_.settings.brightness += 10;
-    if (app_state_.settings.brightness > 70) {
-        app_state_.settings.brightness = 10;
+    if (app_state_.settings.brightness == LOW_BRIGHTNESS) {
+        app_state_.settings.brightness = HIGH_BRIGHTNESS;
+    } else {
+        app_state_.settings.brightness = LOW_BRIGHTNESS;
     }
     
     lvgl_port_lock(portMAX_DELAY);
         options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
-    
     display_set_brightness(app_state_.settings.brightness);
 }
 
@@ -211,7 +219,7 @@ void AppController::increment_feed_interval()
 void AppController::rotate_display()
 {
     ESP_LOGI(TAG, "rotate_display()");
-
+    
     switch (app_state_.settings.display_rotation) {
         case LV_DISPLAY_ROTATION_0: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_90; break;
         case LV_DISPLAY_ROTATION_90: app_state_.settings.display_rotation = LV_DISPLAY_ROTATION_180; break;
@@ -224,5 +232,4 @@ void AppController::rotate_display()
         options_screen_.update_ui_state(app_state_);
         display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
-
 }

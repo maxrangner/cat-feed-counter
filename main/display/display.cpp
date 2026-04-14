@@ -1,4 +1,5 @@
 #include "display.h"
+#include "config.h"
 
 #include <cstring>
 #include <initializer_list>
@@ -18,21 +19,11 @@ static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static lv_display_t* disp_handle = NULL;
 
-#define WAVESHARE_LEDC_DUTY_RESOLUTION LEDC_TIMER_13_BIT
+#define WAVESHARE_LEDC_DUTY_RESOLUTION BACKLIGHT_PWM_DUTY_RESOLUTION
 #define WAVESHARE_LEDC_MAX_DUTY ((1U << WAVESHARE_LEDC_DUTY_RESOLUTION) - 1U)
 
 #ifndef WAVESHARE_ST7789T_VCOM
 #define WAVESHARE_ST7789T_VCOM 0x35
-#endif
-
-// Temporary static-screen workaround: periodically redraws to mask static-panel artifacts.
-// Try setting this to 0 later; if glitches return, this is still a band-aid rather than the root fix.
-#ifndef WAVESHARE_STATIC_REFRESH_ENABLED
-#define WAVESHARE_STATIC_REFRESH_ENABLED 1
-#endif
-
-#ifndef WAVESHARE_STATIC_REFRESH_PERIOD_MS
-#define WAVESHARE_STATIC_REFRESH_PERIOD_MS 100
 #endif
 
 static void display_tx_param(uint8_t cmd, std::initializer_list<uint8_t> params)
@@ -45,7 +36,6 @@ static void display_apply_waveshare_panel_init()
     ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(io_handle, LCD_CMD_SLPOUT, NULL, 0));
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    // MADCTL baseline from the currently stable panel state; later esp_lcd panel ops may rewrite this register.
     display_tx_param(0x36, {0x08});
     display_tx_param(0x3A, {0x05});
     display_tx_param(0xB0, {0x00, 0xE8});
@@ -74,18 +64,6 @@ static void display_set_waveshare_panel_mode()
     ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 34, 0));
 }
 
-#if WAVESHARE_STATIC_REFRESH_ENABLED
-static void display_static_refresh_timer_cb(lv_timer_t *timer)
-{
-    (void)timer;
-
-    lv_obj_t *screen = lv_screen_active();
-    if (screen != NULL) {
-        lv_obj_invalidate(screen);
-    }
-}
-#endif
-
 static void display_spi_init()
 {
     spi_bus_config_t buscfg = {};
@@ -108,7 +86,7 @@ static void display_io_init()
 
     io_config.dc_gpio_num       = PIN_NUM_DC;
     io_config.cs_gpio_num       = PIN_NUM_CS;
-    io_config.pclk_hz           = 12 * 1000 * 1000;
+    io_config.pclk_hz           = DISPLAY_SPI_CLK_HZ;
     io_config.spi_mode          = 0;
     io_config.trans_queue_depth = 10;
     io_config.lcd_cmd_bits      = 8;
@@ -153,14 +131,12 @@ static void display_backlight_init()
     bk_gpio_config.pin_bit_mask = 1ULL << PIN_NUM_BL;
     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
 
-    // ESP_ERROR_CHECK(gpio_set_level((gpio_num_t)PIN_NUM_BL, 1));
-
     ledc_timer_config_t timer_config = {};
     timer_config.speed_mode = LEDC_LOW_SPEED_MODE;
     timer_config.timer_num = LEDC_TIMER_0;
     timer_config.duty_resolution = WAVESHARE_LEDC_DUTY_RESOLUTION;
-    timer_config.freq_hz = 5000;
-    timer_config.clk_cfg = LEDC_AUTO_CLK;
+    timer_config.freq_hz = BACKLIGHT_PWM_FREQ_HZ;
+    timer_config.clk_cfg = BACKLIGHT_PWM_CLK_CFG;
 
     ESP_ERROR_CHECK(ledc_timer_config(&timer_config));
 
@@ -193,7 +169,6 @@ static void display_lvgl_init()
     disp_cfg.hres          = LCD_H_RES;
     disp_cfg.vres          = LCD_V_RES;
     disp_cfg.color_format  = LV_COLOR_FORMAT_RGB565;
-    // Native portrait diagnostic baseline to isolate rotation/gap issues.
     disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = false;
     disp_cfg.rotation.swap_xy = false;
@@ -204,26 +179,13 @@ static void display_lvgl_init()
     disp_handle = lvgl_port_add_disp(&disp_cfg);
     ESP_ERROR_CHECK(disp_handle != NULL ? ESP_OK : ESP_FAIL);
     lv_display_set_rotation(disp_handle, LV_DISPLAY_ROTATION_90);
-
-#if WAVESHARE_STATIC_REFRESH_ENABLED
-    lvgl_port_lock(portMAX_DELAY);
-    lv_timer_t *refresh_timer = lv_timer_create(
-        display_static_refresh_timer_cb,
-        WAVESHARE_STATIC_REFRESH_PERIOD_MS,
-        NULL
-    );
-    ESP_ERROR_CHECK(refresh_timer != NULL ? ESP_OK : ESP_FAIL);
-    lvgl_port_unlock();
-#endif
 }
 
 void display_set_brightness(uint8_t percent)
 {
     if (percent > 100) percent = 100;
 
-    uint32_t duty = WAVESHARE_LEDC_MAX_DUTY - (81U * (100U - percent));
-    if (percent == 0) duty = 0;
-
+    uint32_t duty = (WAVESHARE_LEDC_MAX_DUTY * percent) / 100U;
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty));
     ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
 }
