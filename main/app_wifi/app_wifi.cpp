@@ -5,6 +5,7 @@
 #include "esp_netif_sntp.h"
 #include "esp_sntp.h"
 
+
 static const char *TAG = "app_wifi interface";
 
 AppWifi::AppWifi() {}
@@ -29,6 +30,7 @@ void AppWifi::init(QueueHandle_t app_queue)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &credentials));
 
     app_queue_ = app_queue;
+
     esp_event_handler_register(
         WIFI_EVENT,
         ESP_EVENT_ANY_ID,
@@ -87,28 +89,25 @@ void AppWifi::snpt_task(void* pvParameters)
 {
     auto* self = static_cast<AppWifi*>(pvParameters);
 
-    ESP_LOGI(TAG, "Enter snpt_task");
-    app_event_t package;
+    app_event_t package = {};
     package.msg_event = AppEventType::TIME_SYNCED;
-
     esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
     esp_netif_sntp_init(&config);
 
     while(esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000)) != ESP_OK) {
         printf("Failed to update system time within 10s timeout");
     }
-    ESP_LOGI(TAG, "SNPT time sync complete");
- 
+    
     xQueueSend(self->app_queue_, &package, 0);
     esp_wifi_stop();
-
     esp_netif_sntp_deinit();
+
+    ESP_LOGI(TAG, "SNPT time sync complete");
     vTaskDelete(NULL);
 }
 
 void AppWifi::sync_time()
 {
     ESP_ERROR_CHECK(esp_wifi_start());
-    esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     esp_wifi_connect();
 }

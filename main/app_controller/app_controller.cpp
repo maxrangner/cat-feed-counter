@@ -11,7 +11,17 @@
 #include "config.h"
 
 
+static const char *TAG = "app_controller";
 static void btn_cb(button_event_t btn_event, void* user_data);
+
+void AppController::reset_day_timer_cb(void* arg)
+{
+    auto* self = static_cast<AppController*>(arg);
+
+    app_event_t event = {};
+    event.msg_event = AppEventType::RESET_DAY;
+    xQueueSend(self->in_queue_, &event, 0);
+}
 
 static void nvs_init()
 {
@@ -36,12 +46,23 @@ void AppController::init()
         .half_feed_steps = false,
         .feed_interval = 3,
         .display_rotation = LV_DISPLAY_ROTATION_90,
+        .day_reset_offset = 3,
     };
+    app_state_.timer_running = false;
     app_state_.stats.tot_num_feeds = 0;
     app_state_.current_screen = screens[1];
     app_state_.today.num_feeds = 0;
+    app_state_.today.last_feed_time = 0;
+    app_state_.next_feed_time = 0;
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
+
+    esp_timer_create_args_t timer_args = {};
+    timer_args.callback = &reset_day_timer_cb;
+    timer_args.arg = this;
+    timer_args.dispatch_method = ESP_TIMER_TASK;
+    timer_args.name = "reset_day_timer";
+    esp_timer_create(&timer_args, &reset_day_timer);
 
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.init();
@@ -79,7 +100,7 @@ void AppController::app_task(void* pvParameters)
     self->app_storage_.init();
     self->app_storage_.load_stats(&self->app_state_.stats);
 
-    app_event_t event;
+    app_event_t event = {};
 
     lvgl_port_lock(portMAX_DELAY);
         self->main_screen_.update_ui_state(self->app_state_);
@@ -100,17 +121,10 @@ void AppController::handle_app_events(app_event_t event)
     ScreenAction action = ScreenAction::NONE;
 
     switch (event.msg_event) {
-        case AppEventType::BTN_SHORT_PRESS:
-            lvgl_port_lock(portMAX_DELAY);
-                action = app_state_.current_screen->on_short_press();
-            lvgl_port_unlock();
-            break;
-        case AppEventType::BTN_LONG_PRESS:
-            lvgl_port_lock(portMAX_DELAY);
-                action = app_state_.current_screen->on_long_press();
-            lvgl_port_unlock();
-            break;
-        case AppEventType::TIME_SYNCED: break;
+        case AppEventType::BTN_SHORT_PRESS: action = app_state_.current_screen->on_short_press(); break;
+        case AppEventType::BTN_LONG_PRESS: action = app_state_.current_screen->on_long_press(); break;
+        case AppEventType::TIME_SYNCED: set_reset_timer(); break;
+        case AppEventType::RESET_DAY: reset_day(); break;
         default: break;
     }
 
@@ -156,11 +170,41 @@ void AppController::next_screen()
     lvgl_port_unlock();
 }
 
+void AppController::set_reset_timer()
+{
+    ESP_LOGI(TAG, "set_reset_timer()");
+
+    if (app_state_.timer_running) {
+        esp_timer_stop(reset_day_timer);
+    }
+
+    time_t now = time(NULL);
+    tm* reset_time = localtime(&now);
+    reset_time->tm_hour = app_state_.settings.day_reset_offset;
+    reset_time->tm_min = 0;
+    reset_time->tm_sec = 0;
+
+    time_t target = mktime(reset_time);
+
+    if (target <= now) {
+        reset_time->tm_mday += 1;
+        target = mktime(reset_time);
+    }
+
+    uint64_t next_reset = (target - now) * 1000000ULL;
+
+    esp_timer_start_once(reset_day_timer, next_reset);
+    ESP_LOGI(TAG, "Next reset in %" PRIu64 " seconds", next_reset / 1000000ULL);
+    app_state_.timer_running = true;
+}
+
 void AppController::reset_day()
 {
     ESP_LOGI(TAG, "reset_day()");
-
+    
+    app_state_.timer_running = false;
     app_state_.today.num_feeds = 0;
+    set_reset_timer(); 
 }
 
 void AppController::save_data()
@@ -180,6 +224,7 @@ void AppController::increment_count()
     ESP_LOGI(TAG, "increment_count()");
 
     app_state_.today.num_feeds++;
+    app_state_.today.last_feed_time = time(NULL);
 
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.update_ui_state(app_state_);
