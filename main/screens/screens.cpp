@@ -7,7 +7,9 @@ void Screen::update_ui_state(const app_state_t& state)
     ui_state_.half_feed_steps = state.settings.half_feed_steps;
     ui_state_.screen_orientation = state.settings.display_rotation;
     ui_state_.count = state.today.num_feeds;
+    ui_state_.reset_day_offset = state.settings.day_reset_offset;
     
+    apply_layout();
     update();
 }
 
@@ -15,14 +17,25 @@ void Screen::update_ui_state(const app_state_t& state)
 -------------------------------MAIN SCREEN-------------------------------
 */
 
+void MainScreen::apply_layout()
+{
+    if (ui_state_.screen_orientation == LV_DISPLAY_ROTATION_90 || ui_state_.screen_orientation == LV_DISPLAY_ROTATION_270) {
+        lv_obj_set_style_text_font(main_label_text, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(main_label_count, &lv_font_montserrat_48, 0);
+        lv_obj_align(main_label_text, LV_ALIGN_LEFT_MID, 20, -15);
+        lv_obj_align(main_label_count, LV_ALIGN_CENTER, 50, -15);
+        lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
+    } else {
+        lv_obj_set_style_text_font(main_label_text, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(main_label_count, &lv_font_montserrat_24, 0);
+        lv_obj_align(main_label_text, LV_ALIGN_TOP_MID, 0, 20);
+        lv_obj_align(main_label_count, LV_ALIGN_CENTER, 0, 0);
+        lv_obj_align(main_label_bar, LV_ALIGN_BOTTOM_MID, 0, -20);
+    }
+}
+
 void MainScreen::init()
 {
-    ui_state_.brightness = 30;
-    ui_state_.feed_interval = 1;
-    ui_state_.half_feed_steps = false;
-    ui_state_.screen_orientation = LV_DISPLAY_ROTATION_0;
-    ui_state_.count = 0;
-
     main_scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(main_scr, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(main_scr, LV_OPA_COVER, 0);
@@ -75,56 +88,88 @@ ScreenAction MainScreen::on_long_press()
 -------------------------------OPTIONS SCREEN-------------------------------
 */
 
+void OptionsScreen::apply_layout()
+{
+    if (ui_state_.screen_orientation == LV_DISPLAY_ROTATION_90 || ui_state_.screen_orientation == LV_DISPLAY_ROTATION_270) {
+        lv_obj_set_style_text_font(brightness_title_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(brightness_value_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(feed_interval_title_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(feed_interval_value_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(screen_orientation_title_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(screen_orientation_value_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(reset_offset_title_label_, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(reset_offset_value_label_, &lv_font_montserrat_24, 0);
+
+        lv_obj_align(brightness_title_label_, LV_ALIGN_LEFT_MID, 20, -45);
+        lv_obj_align(brightness_value_label_, LV_ALIGN_LEFT_MID, 215, -45);
+        lv_obj_align(feed_interval_title_label_, LV_ALIGN_LEFT_MID, 20, -15);
+        lv_obj_align(feed_interval_value_label_, LV_ALIGN_LEFT_MID, 215, -15);
+        lv_obj_align(screen_orientation_title_label_, LV_ALIGN_LEFT_MID, 20, 15);
+        lv_obj_align(screen_orientation_value_label_, LV_ALIGN_LEFT_MID, 215, 15);
+        lv_obj_align(reset_offset_title_label_, LV_ALIGN_LEFT_MID, 20, 45);
+        lv_obj_align(reset_offset_value_label_, LV_ALIGN_LEFT_MID, 215, 45);
+    } else {
+        lv_obj_set_style_text_font(brightness_title_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(brightness_value_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(feed_interval_title_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(feed_interval_value_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(screen_orientation_title_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(screen_orientation_value_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(reset_offset_title_label_, &lv_font_montserrat_14, 0);
+        lv_obj_set_style_text_font(reset_offset_value_label_, &lv_font_montserrat_14, 0);
+
+        lv_obj_align(brightness_title_label_, LV_ALIGN_LEFT_MID, 10, -30);
+        lv_obj_align(brightness_value_label_, LV_ALIGN_LEFT_MID, 120, -30);
+        lv_obj_align(feed_interval_title_label_, LV_ALIGN_LEFT_MID, 10, -10);
+        lv_obj_align(feed_interval_value_label_, LV_ALIGN_LEFT_MID, 120, -10);
+        lv_obj_align(screen_orientation_title_label_, LV_ALIGN_LEFT_MID, 10, 10);
+        lv_obj_align(screen_orientation_value_label_, LV_ALIGN_LEFT_MID, 120, 10);
+        lv_obj_align(reset_offset_title_label_, LV_ALIGN_LEFT_MID, 10, 30);
+        lv_obj_align(reset_offset_value_label_, LV_ALIGN_LEFT_MID, 120, 30);
+    }
+}
+
 void OptionsScreen::init()
 {
-    ui_state_.brightness = 30;
-    ui_state_.feed_interval = 1;
-    ui_state_.half_feed_steps = false;
-    ui_state_.screen_orientation = LV_DISPLAY_ROTATION_0;
-    ui_state_.count = 0;
-
     options_scr_ = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(options_scr_, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(options_scr_, LV_OPA_COVER, 0);
 
     brightness_title_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(brightness_title_label_, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(brightness_title_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(brightness_title_label_, lv_palette_main(LV_PALETTE_RED), 0);
-    lv_obj_align(brightness_title_label_, LV_ALIGN_LEFT_MID, 30, -35);
     lv_label_set_text(brightness_title_label_, "Brightness:");
 
     brightness_value_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(brightness_value_label_, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(brightness_value_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(brightness_value_label_, lv_color_black(), 0);
-    lv_obj_align(brightness_value_label_, LV_ALIGN_LEFT_MID, 210, -35);
 
     feed_interval_title_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(feed_interval_title_label_, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(feed_interval_title_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(feed_interval_title_label_, lv_color_black(), 0);
-    lv_obj_align(feed_interval_title_label_, LV_ALIGN_LEFT_MID, 30, 0);
     lv_label_set_text(feed_interval_title_label_, "Feed interval:");
 
     feed_interval_value_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(feed_interval_value_label_, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(feed_interval_value_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(feed_interval_value_label_, lv_color_black(), 0);
-    lv_obj_align(feed_interval_value_label_, LV_ALIGN_LEFT_MID, 210, 0);
 
     screen_orientation_title_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(screen_orientation_title_label_, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(screen_orientation_title_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(screen_orientation_title_label_, lv_color_black(), 0);
-    lv_obj_align(screen_orientation_title_label_, LV_ALIGN_LEFT_MID, 30, 35);
     lv_label_set_text(screen_orientation_title_label_, "Rotate display:");
 
     screen_orientation_value_label_ = lv_label_create(options_scr_);
     lv_label_set_long_mode(screen_orientation_value_label_, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_font(screen_orientation_value_label_, &lv_font_montserrat_24, 0);
     lv_obj_set_style_text_color(screen_orientation_value_label_, lv_color_black(), 0);
-    lv_obj_align(screen_orientation_value_label_, LV_ALIGN_LEFT_MID, 210, 35);
+
+    reset_offset_title_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(reset_offset_title_label_, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_color(reset_offset_title_label_, lv_color_black(), 0);
+    lv_label_set_text(reset_offset_title_label_, "Reset offset:");
+
+    reset_offset_value_label_ = lv_label_create(options_scr_);
+    lv_label_set_long_mode(reset_offset_value_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_color(reset_offset_value_label_, lv_color_black(), 0);
 
     option_brightness_.label = brightness_title_label_;
     option_brightness_.label_state = brightness_value_label_;
@@ -137,6 +182,10 @@ void OptionsScreen::init()
     option_screen_orientation_.label = screen_orientation_title_label_;
     option_screen_orientation_.label_state = screen_orientation_value_label_;
     option_screen_orientation_.action = ScreenAction::ROTATE_DISPLAY;
+
+    option_reset_offset_.label = reset_offset_title_label_;
+    option_reset_offset_.label_state = reset_offset_value_label_;
+    option_reset_offset_.action = ScreenAction::RESET_OFFSET;
 }
 
 void OptionsScreen::show()
@@ -155,6 +204,7 @@ void OptionsScreen::update()
     }
     lv_label_set_text_fmt(brightness_value_label_, "%d", ui_state_.brightness);
     lv_label_set_text_fmt(feed_interval_value_label_, "%d hrs", ui_state_.feed_interval);
+    lv_label_set_text_fmt(reset_offset_value_label_, "+%d hrs", ui_state_.reset_day_offset);
     switch (ui_state_.screen_orientation) {
         case LV_DISPLAY_ROTATION_0: lv_label_set_text(screen_orientation_value_label_, "0"); break;
         case LV_DISPLAY_ROTATION_90: lv_label_set_text(screen_orientation_value_label_, "90"); break;

@@ -50,7 +50,7 @@ void AppController::init()
     };
     app_state_.timer_running = false;
     app_state_.stats.tot_num_feeds = 0;
-    app_state_.current_screen = screens[1];
+    app_state_.current_screen = screens[0];
     app_state_.today.num_feeds = 0;
     app_state_.today.last_feed_time = 0;
     app_state_.next_feed_time = 0;
@@ -134,6 +134,7 @@ void AppController::handle_app_events(app_event_t event)
         case ScreenAction::CHANGE_BRIGHTNESS: change_brightness(); break;
         case ScreenAction::INCREMENT_FEED_INTERVAL: increment_feed_interval(); break;
         case ScreenAction::ROTATE_DISPLAY: rotate_display(); break;
+        case ScreenAction::RESET_OFFSET: change_reset_offset(); break;
         default: break;
     }
 }
@@ -277,4 +278,17 @@ void AppController::rotate_display()
         options_screen_.update_ui_state(app_state_);
         display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
+}
+
+void AppController::change_reset_offset()
+{
+    ESP_LOGI(TAG, "change_reset_offset()");
+
+    app_state_.settings.day_reset_offset = (app_state_.settings.day_reset_offset + 1) % 5;
+
+    lvgl_port_lock(portMAX_DELAY);
+        options_screen_.update_ui_state(app_state_);
+    lvgl_port_unlock();
+
+    set_reset_timer();
 }

@@ -1,7 +1,7 @@
 #ifndef SCREENS_H
 #define SCREENS_H
 
-#define NUM_OPTIONS 3
+#define NUM_OPTIONS 4
 
 #include <cstdint>
 
@@ -15,6 +15,7 @@ enum class ScreenAction {
     CHANGE_BRIGHTNESS,
     INCREMENT_FEED_INTERVAL,
     ROTATE_DISPLAY,
+    RESET_OFFSET,
 };
 
 typedef struct {
@@ -23,6 +24,7 @@ typedef struct {
     bool half_feed_steps;
     uint8_t brightness;
     lv_display_rotation_t screen_orientation;
+    uint8_t reset_day_offset;
 } ui_state_t;
 
 typedef struct {
@@ -33,7 +35,8 @@ typedef struct {
 
 class Screen {
 protected:
-    ui_state_t ui_state_;
+    ui_state_t ui_state_ = {};
+    virtual void apply_layout() = 0;
 public:
     virtual void init() = 0;
     virtual void show() = 0;
@@ -48,6 +51,7 @@ class MainScreen : public Screen {
     lv_obj_t* main_label_text;
     lv_obj_t* main_label_count;
     lv_obj_t* main_label_bar;
+    void apply_layout() override;
 public:
     void init() override;
     void show() override;
@@ -68,16 +72,22 @@ class OptionsScreen : public Screen {
     lv_obj_t* screen_orientation_title_label_;
     lv_obj_t* screen_orientation_value_label_;
 
+    lv_obj_t* reset_offset_title_label_;
+    lv_obj_t* reset_offset_value_label_;
+
     options_t option_brightness_;
     options_t option_feed_interval_;
     options_t option_screen_orientation_;
+    options_t option_reset_offset_;
     uint8_t selected_index_ = 0;
     
     options_t* options_[NUM_OPTIONS] = {
         &option_brightness_,
         &option_feed_interval_,
-        &option_screen_orientation_
+        &option_screen_orientation_,
+        &option_reset_offset_,
     };
+    void apply_layout() override;
 public:
     void init() override;
     void show() override;

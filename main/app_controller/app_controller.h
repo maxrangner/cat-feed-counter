@@ -38,6 +38,7 @@ class AppController {
     void change_brightness();
     void increment_feed_interval();
     void rotate_display();
+    void change_reset_offset();
 public:
     AppController();
     void init();
