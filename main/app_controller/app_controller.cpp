@@ -42,7 +42,7 @@ void AppController::init()
     button_service_init();
 
     app_state_.settings = {
-        .brightness = DEFAULT_BRIGHTNESS,
+        .brightness = BRIGHTNESS_MEDIUM,
         .half_feed_steps = false,
         .feed_interval = 3,
         .display_rotation = LV_DISPLAY_ROTATION_90,
@@ -236,10 +236,10 @@ void AppController::change_brightness()
 {
     ESP_LOGI(TAG, "change_brightness()");
 
-    if (app_state_.settings.brightness == LOW_BRIGHTNESS) {
-        app_state_.settings.brightness = HIGH_BRIGHTNESS;
+    if (app_state_.settings.brightness == BRIGHTNESS_LOW) {
+        app_state_.settings.brightness = BRIGHTNESS_HIGH;
     } else {
-        app_state_.settings.brightness = LOW_BRIGHTNESS;
+        app_state_.settings.brightness = BRIGHTNESS_LOW;
     }
     
     lvgl_port_lock(portMAX_DELAY);
