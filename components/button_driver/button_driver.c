@@ -33,10 +33,10 @@ void button_timer_cb(TimerHandle_t xTimer)
         ESP_LOGI(TAG, "Button pressed for %lld ms", pressed_time);
         if (pressed_time >= handle->long_press_dur) {
             event = BTN_LONG_PRESS;
-            handle->btn_callback(event, handle->user_data);
+            handle->btn_callback(event, handle->gpio_num, handle->user_data);
         } else {
             event = BTN_SHORT_PRESS;
-            handle->btn_callback(event, handle->user_data);
+            handle->btn_callback(event, handle->gpio_num, handle->user_data);
         }
         handle->press_time = 0;
     }

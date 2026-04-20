@@ -20,7 +20,7 @@ typedef struct {
     bool pressed_level;
     bool current_edge;
     uint16_t long_press_dur;
-    void (*btn_callback)(button_event_t event, void* user_data);
+    void (*btn_callback)(button_event_t event, uint8_t gpio_num, void* user_data);
     void* user_data;
     TimerHandle_t timer;
     uint64_t press_time;
@@ -31,7 +31,7 @@ typedef struct {
     bool hasPullup;
     uint16_t debounce;
     uint16_t long_press_dur;
-    void (*btn_callback)(button_event_t event, void* user_data);
+    void (*btn_callback)(button_event_t event, uint8_t gpio_num, void* user_data);
     void* user_data;
 } button_cfg_t;
 

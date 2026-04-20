@@ -10,8 +10,11 @@
 class Screen;
 
 enum class AppEventType {
-    BTN_SHORT_PRESS,
-    BTN_LONG_PRESS,
+    NONE,
+    BTN_MAIN_SHORT_PRESS,
+    BTN_MAIN_LONG_PRESS,
+    BTN_SIDE_SHORT_PRESS,
+    BTN_SIDE_LONG_PRESS,
     TIME_SYNCED,
     RESET_DAY,
 };

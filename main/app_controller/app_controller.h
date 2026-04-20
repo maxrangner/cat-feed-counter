@@ -22,7 +22,9 @@ class AppController {
     AppWifi app_wifi_;
     AppStorage app_storage_;
     app_state_t app_state_;
-    button_t btn_;
+
+    button_t btn_main_;
+    button_t btn_side_;
 
     MainScreen main_screen_;
     OptionsScreen options_screen_;

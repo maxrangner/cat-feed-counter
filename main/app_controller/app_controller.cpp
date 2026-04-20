@@ -1,5 +1,8 @@
 #include "app_controller.h"
 
+#define BTN_MAIN_PIN 9
+#define BTN_SIDE_PIN 1
+
 #include <ctime>
 #include <inttypes.h>
 #include "lvgl.h"
@@ -12,7 +15,7 @@
 
 
 static const char *TAG = "app_controller";
-static void btn_cb(button_event_t btn_event, void* user_data);
+static void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data);
 
 void AppController::reset_day_timer_cb(void* arg)
 {
@@ -79,15 +82,25 @@ void AppController::init()
         &task_app_controller_
     );
 
-    button_cfg_t btn_cfg = {
-        .gpio_num = 9,
+    button_cfg_t btn_main_cfg = {
+        .gpio_num = BTN_MAIN_PIN,
         .hasPullup = true,
         .debounce = 25,
         .long_press_dur = 500,
         .btn_callback = btn_cb,
         .user_data = this,
     };
-    button_init(&btn_cfg, &btn_);
+    button_init(&btn_main_cfg, &btn_main_);
+
+    button_cfg_t btn_side_cfg = {
+        .gpio_num = BTN_SIDE_PIN,
+        .hasPullup = true,
+        .debounce = 25,
+        .long_press_dur = 500,
+        .btn_callback = btn_cb,
+        .user_data = this,
+    };
+    button_init(&btn_side_cfg, &btn_side_);
 }
 
 void AppController::app_task(void* pvParameters)
@@ -109,7 +122,7 @@ void AppController::app_task(void* pvParameters)
     display_set_brightness(self->app_state_.settings.brightness);
 
     while(1) {
-        if (xQueueReceive(self->in_queue_, &event, pdMS_TO_TICKS(1000))) {
+        if (xQueueReceive(self->in_queue_, &event, pdMS_TO_TICKS(60000))) { // 60000 == One minute
             self->handle_app_events(event);
         }
         lvgl_port_lock(portMAX_DELAY);
@@ -123,8 +136,10 @@ void AppController::handle_app_events(app_event_t event)
     ScreenAction action = ScreenAction::NONE;
 
     switch (event.msg_event) {
-        case AppEventType::BTN_SHORT_PRESS: action = app_state_.current_screen->on_short_press(); break;
-        case AppEventType::BTN_LONG_PRESS: action = app_state_.current_screen->on_long_press(); break;
+        case AppEventType::BTN_MAIN_SHORT_PRESS: action = app_state_.current_screen->on_short_press(); break;
+        case AppEventType::BTN_MAIN_LONG_PRESS: action = app_state_.current_screen->on_long_press(); break;
+        case AppEventType::BTN_SIDE_SHORT_PRESS: break;
+        case AppEventType::BTN_SIDE_LONG_PRESS: break;
         case AppEventType::TIME_SYNCED: set_reset_timer(); break;
         case AppEventType::RESET_DAY: reset_day(); break;
         default: break;
@@ -144,16 +159,6 @@ void AppController::handle_app_events(app_event_t event)
 void AppController::post_event(app_event_t event)
 {
     xQueueSend(in_queue_, &event, 0);
-}
-
-void btn_cb(button_event_t btn_event, void* user_data)
-{
-    AppController *self = (AppController *)user_data;
-
-    app_event_t event;
-    if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SHORT_PRESS;
-    if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_LONG_PRESS;
-    self->post_event(event);
 }
 
 QueueHandle_t AppController::getAppQueue()
@@ -294,4 +299,25 @@ void AppController::change_reset_offset()
     lvgl_port_unlock();
 
     set_reset_timer();
+}
+
+void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data)
+{
+    AppController *self = (AppController *)user_data;
+
+    
+    app_event_t event = {};
+    event.msg_event = AppEventType::NONE;
+
+    if (gpio_num == BTN_MAIN_PIN) {
+        if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_MAIN_SHORT_PRESS;
+        if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_MAIN_LONG_PRESS;
+    }
+    if (gpio_num == BTN_SIDE_PIN) {
+        if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SIDE_LONG_PRESS;
+        if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_SIDE_LONG_PRESS;
+    }
+    if (event.msg_event != AppEventType::NONE) {
+        self->post_event(event);
+    }
 }
