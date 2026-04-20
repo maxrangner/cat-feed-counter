@@ -44,16 +44,15 @@ void AppController::init()
     app_state_.settings = {
         .brightness = BRIGHTNESS_MEDIUM,
         .half_feed_steps = false,
-        .feed_interval = 3,
+        .feed_interval = 1,
         .display_rotation = LV_DISPLAY_ROTATION_90,
         .day_reset_offset = 3,
     };
+    app_state_.current_screen = screens[0];
     app_state_.timer_running = false;
     app_state_.stats.tot_num_feeds = 0;
-    app_state_.current_screen = screens[0];
     app_state_.today.num_feeds = 0;
-    app_state_.today.last_feed_time = 0;
-    app_state_.next_feed_time = 0;
+    app_state_.last_feed_time = 0;
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
 
@@ -110,9 +109,12 @@ void AppController::app_task(void* pvParameters)
     display_set_brightness(self->app_state_.settings.brightness);
 
     while(1) {
-        if (xQueueReceive(self->in_queue_, &event, portMAX_DELAY)) {
+        if (xQueueReceive(self->in_queue_, &event, pdMS_TO_TICKS(1000))) {
             self->handle_app_events(event);
         }
+        lvgl_port_lock(portMAX_DELAY);
+            self->app_state_.current_screen->update_ui_state(self->app_state_);
+        lvgl_port_unlock();
     }
 }
 
@@ -225,7 +227,7 @@ void AppController::increment_count()
     ESP_LOGI(TAG, "increment_count()");
 
     app_state_.today.num_feeds++;
-    app_state_.today.last_feed_time = time(NULL);
+    app_state_.last_feed_time = time(NULL);
 
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.update_ui_state(app_state_);
@@ -258,6 +260,7 @@ void AppController::increment_feed_interval()
     }
 
     lvgl_port_lock(portMAX_DELAY);
+        main_screen_.update_ui_state(app_state_);
         options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 }

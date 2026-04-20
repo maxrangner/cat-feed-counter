@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <ctime>
+
 #include "app_wifi.h"
 
 #include "lvgl.h"
@@ -31,7 +33,6 @@ typedef struct {
 
 typedef struct {
     uint32_t num_feeds;
-    uint32_t last_feed_time;
 } day_data_t;
 
 typedef struct {
@@ -40,11 +41,11 @@ typedef struct {
 
 typedef struct {
     settings_t settings;
+    Screen* current_screen;
     bool timer_running;
     stats_t stats;
-    Screen* current_screen;
     day_data_t today;
-    uint32_t next_feed_time;
+    time_t last_feed_time;
 } app_state_t;
 
 #endif

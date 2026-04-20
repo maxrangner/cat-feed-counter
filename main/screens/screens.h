@@ -4,6 +4,7 @@
 #define NUM_OPTIONS 4
 
 #include <cstdint>
+#include <ctime>
 
 #include "lvgl.h"
 #include "app_types.h"
@@ -25,6 +26,7 @@ typedef struct {
     uint8_t brightness;
     lv_display_rotation_t screen_orientation;
     uint8_t reset_day_offset;
+    time_t last_feed_time;
 } ui_state_t;
 
 typedef struct {
@@ -51,6 +53,7 @@ class MainScreen : public Screen {
     lv_obj_t* main_label_text;
     lv_obj_t* main_label_count;
     lv_obj_t* main_label_bar;
+    time_t elapsed_seconds;
     void apply_layout() override;
 public:
     void init() override;

@@ -8,6 +8,7 @@ void Screen::update_ui_state(const app_state_t& state)
     ui_state_.screen_orientation = state.settings.display_rotation;
     ui_state_.count = state.today.num_feeds;
     ui_state_.reset_day_offset = state.settings.day_reset_offset;
+    ui_state_.last_feed_time = state.last_feed_time;
     
     apply_layout();
     update();
@@ -36,6 +37,8 @@ void MainScreen::apply_layout()
 
 void MainScreen::init()
 {
+    elapsed_seconds = 0;
+
     main_scr = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(main_scr, lv_color_white(), 0);
     lv_obj_set_style_bg_opa(main_scr, LV_OPA_COVER, 0);
@@ -71,7 +74,12 @@ void MainScreen::show()
 void MainScreen::update()
 {
     lv_label_set_text_fmt(main_label_count, "%d", ui_state_.count);
-    lv_bar_set_value(main_label_bar, ui_state_.count, LV_ANIM_ON);
+
+    time_t total = ui_state_.feed_interval * 3600;
+    // time_t total = 200;
+    time_t elapsed = time(NULL) - ui_state_.last_feed_time;
+    lv_bar_set_range(main_label_bar, 0, total);
+    lv_bar_set_value(main_label_bar, elapsed, LV_ANIM_ON);
 }
 
 ScreenAction MainScreen::on_short_press()
