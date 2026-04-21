@@ -1,10 +1,15 @@
 #include "app_wifi.h"
+
+#include <cstdlib>
+#include <ctime>
+
 #include "esp_log.h"
 #include "credentials.h"
 #include "app_types.h"
 #include "esp_netif_sntp.h"
 #include "esp_sntp.h"
 
+#include "config.h"
 
 static const char *TAG = "app_wifi interface";
 
@@ -98,6 +103,9 @@ void AppWifi::snpt_task(void* pvParameters)
         printf("Failed to update system time within 10s timeout");
     }
     
+    setenv("TZ", APP_TIMEZONE, 1);
+    tzset();
+
     xQueueSend(self->app_queue_, &package, 0);
     esp_wifi_stop();
     esp_netif_sntp_deinit();
