@@ -1,7 +1,7 @@
 #include "app_controller.h"
 
-#define BTN_MAIN_PIN 9
-#define BTN_SIDE_PIN 1
+#define BTN_MAIN_PIN 3
+#define BTN_SIDE_PIN 9
 
 #include <ctime>
 #include <inttypes.h>
@@ -136,10 +136,10 @@ void AppController::handle_app_events(app_event_t event)
     ScreenAction action = ScreenAction::NONE;
 
     switch (event.msg_event) {
-        case AppEventType::BTN_MAIN_SHORT_PRESS: action = app_state_.current_screen->on_short_press(); break;
-        case AppEventType::BTN_MAIN_LONG_PRESS: action = app_state_.current_screen->on_long_press(); break;
-        case AppEventType::BTN_SIDE_SHORT_PRESS: break;
-        case AppEventType::BTN_SIDE_LONG_PRESS: break;
+        case AppEventType::BTN_MAIN_SHORT_PRESS: action = app_state_.current_screen->primary_action(); break;
+        case AppEventType::BTN_MAIN_LONG_PRESS: next_screen(); break;
+        case AppEventType::BTN_SIDE_SHORT_PRESS: action = app_state_.current_screen->secondary_action(); break;
+        case AppEventType::BTN_SIDE_LONG_PRESS: ESP_LOGI(TAG, "BTN_SIDE_LONG_PRESS"); break;
         case AppEventType::TIME_SYNCED: set_reset_timer(); break;
         case AppEventType::RESET_DAY: reset_day(); break;
         default: break;
@@ -314,7 +314,7 @@ void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data)
         if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_MAIN_LONG_PRESS;
     }
     if (gpio_num == BTN_SIDE_PIN) {
-        if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SIDE_LONG_PRESS;
+        if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SIDE_SHORT_PRESS;
         if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_SIDE_LONG_PRESS;
     }
     if (event.msg_event != AppEventType::NONE) {

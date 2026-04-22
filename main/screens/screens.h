@@ -43,8 +43,8 @@ public:
     virtual void init() = 0;
     virtual void show() = 0;
     virtual void update() = 0;
-    virtual ScreenAction on_short_press() = 0;
-    virtual ScreenAction on_long_press() = 0;
+    virtual ScreenAction primary_action() = 0;
+    virtual ScreenAction secondary_action() = 0;
     void update_ui_state(const app_state_t& state);
 };
 
@@ -59,8 +59,8 @@ public:
     void init() override;
     void show() override;
     void update() override;
-    ScreenAction on_short_press() override;
-    ScreenAction on_long_press() override;
+    ScreenAction primary_action() override;
+    ScreenAction secondary_action() override;
 };
 
 class OptionsScreen : public Screen {
@@ -95,8 +95,8 @@ public:
     void init() override;
     void show() override;
     void update() override;
-    ScreenAction on_short_press() override;
-    ScreenAction on_long_press() override;
+    ScreenAction primary_action() override;
+    ScreenAction secondary_action() override;
 };
 
 #endif

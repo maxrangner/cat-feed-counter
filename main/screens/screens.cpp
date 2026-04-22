@@ -82,14 +82,14 @@ void MainScreen::update()
     lv_bar_set_value(main_label_bar, elapsed, LV_ANIM_ON);
 }
 
-ScreenAction MainScreen::on_short_press()
+ScreenAction MainScreen::primary_action()
 {
     return ScreenAction::INCREMENT_FEEDS;
 }
 
-ScreenAction MainScreen::on_long_press()
+ScreenAction MainScreen::secondary_action()
 {
-    return ScreenAction::SAVE_DATA;
+    return ScreenAction::NONE;
 }
 
 /*
@@ -221,13 +221,13 @@ void OptionsScreen::update()
     }
 }
 
-ScreenAction OptionsScreen::on_short_press()
+ScreenAction OptionsScreen::primary_action()
 {
     ScreenAction action = options_[selected_index_]->action;
     return action;
 }
 
-ScreenAction OptionsScreen::on_long_press()
+ScreenAction OptionsScreen::secondary_action()
 {
     uint8_t index = (++selected_index_) % NUM_OPTIONS;
     selected_index_ = index;
