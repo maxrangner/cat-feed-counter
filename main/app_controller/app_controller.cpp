@@ -48,7 +48,7 @@ void AppController::init()
         .brightness = BRIGHTNESS_MEDIUM,
         .half_feed_steps = false,
         .feed_interval = 1,
-        .display_rotation = LV_DISPLAY_ROTATION_90,
+        .display_rotation = LV_DISPLAY_ROTATION_180,
         .day_reset_offset = 3,
     };
     app_state_.current_screen = screens[0];
@@ -56,6 +56,10 @@ void AppController::init()
     app_state_.stats.tot_num_feeds = 0;
     app_state_.today.num_feeds = 0;
     app_state_.last_feed_time = 0;
+
+    lvgl_port_lock(portMAX_DELAY);
+        display_set_rotation(app_state_.settings.display_rotation);
+    lvgl_port_unlock();
 
     in_queue_ = xQueueCreate(10, sizeof(app_event_t));
 
@@ -69,8 +73,10 @@ void AppController::init()
     lvgl_port_lock(portMAX_DELAY);
         main_screen_.init();
         options_screen_.init();
+        stats_screen_.init();
         main_screen_.update_ui_state(app_state_);
         options_screen_.update_ui_state(app_state_);
+        stats_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 
     xTaskCreate(
@@ -171,9 +177,10 @@ void AppController::next_screen()
     ESP_LOGI(TAG, "next_screen()");
 
     static uint8_t index = 0;
-    index = (index + 1) % 2;
+    index = (index + 1) % NUM_SCREENS;
     app_state_.current_screen = screens[index];
     lvgl_port_lock(portMAX_DELAY);
+        app_state_.current_screen->update_ui_state(app_state_);
         app_state_.current_screen->show();
     lvgl_port_unlock();
 }

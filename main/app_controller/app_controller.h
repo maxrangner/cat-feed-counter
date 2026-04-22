@@ -1,7 +1,7 @@
 #ifndef APP_CONTROLLER_H
 #define APP_CONTROLLER_H
 
-#define NUM_SCREENS 2
+#define NUM_SCREENS 3
 
 #include <cstdint>
 
@@ -28,7 +28,8 @@ class AppController {
 
     MainScreen main_screen_;
     OptionsScreen options_screen_;
-    Screen* screens[NUM_SCREENS] = {&main_screen_, &options_screen_};
+    StatsScreen stats_screen_;
+    Screen* screens[NUM_SCREENS] = {&main_screen_, &options_screen_, &stats_screen_};
 
     static void app_task(void* pvParameters);
     static void reset_day_timer_cb(void* arg);

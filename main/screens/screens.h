@@ -49,11 +49,11 @@ public:
 };
 
 class MainScreen : public Screen {
-    lv_obj_t* main_scr;
-    lv_obj_t* main_label_text;
-    lv_obj_t* main_label_count;
-    lv_obj_t* main_label_bar;
-    time_t elapsed_seconds;
+    lv_obj_t* main_scr_;
+    lv_obj_t* main_label_text_;
+    lv_obj_t* main_label_time_;
+    lv_obj_t* main_label_count_;
+    lv_obj_t* main_label_bar_;
     void apply_layout() override;
 public:
     void init() override;
@@ -90,6 +90,19 @@ class OptionsScreen : public Screen {
         &option_screen_orientation_,
         &option_reset_offset_,
     };
+    void apply_layout() override;
+public:
+    void init() override;
+    void show() override;
+    void update() override;
+    ScreenAction primary_action() override;
+    ScreenAction secondary_action() override;
+};
+
+class StatsScreen : public Screen {
+    lv_obj_t* stats_scr_;
+    lv_obj_t* stats_label_text_;
+    lv_obj_t* stats_label_value_;
     void apply_layout() override;
 public:
     void init() override;
