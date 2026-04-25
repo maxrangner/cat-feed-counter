@@ -35,6 +35,20 @@ static void nvs_init()
 
 AppController::AppController() {}
 
+void AppController::update_current_screen_ui()
+{
+    lvgl_port_lock(portMAX_DELAY);
+        screens_[current_screen_index_]->update_ui_state(app_state_);
+    lvgl_port_unlock();
+}
+
+void AppController::load_current_screen()
+{
+    lvgl_port_lock(portMAX_DELAY);
+        screens_[current_screen_index_]->show();
+    lvgl_port_unlock();
+}
+
 void AppController::init()
 {
     display_init();
@@ -118,10 +132,8 @@ void AppController::app_task(void* pvParameters)
 
     app_event_t event = {};
 
-    lvgl_port_lock(portMAX_DELAY);
-        self->main_screen_.update_ui_state(self->app_state_);
-        self->screens_[self->current_screen_index_]->show();
-    lvgl_port_unlock();
+    self->update_current_screen_ui();
+    self->load_current_screen();
 
     display_set_brightness(self->app_state_.settings.brightness);
 
@@ -129,9 +141,7 @@ void AppController::app_task(void* pvParameters)
         if (xQueueReceive(self->in_queue_, &event, pdMS_TO_TICKS(60000))) { // 60000 == One minute
             self->handle_app_events(event);
         }
-        lvgl_port_lock(portMAX_DELAY);
-            self->screens_[self->current_screen_index_]->update_ui_state(self->app_state_);
-        lvgl_port_unlock();
+        self->update_current_screen_ui();
     }
 }
 
@@ -175,9 +185,7 @@ void AppController::next_screen()
     ESP_LOGI(TAG, "next_screen()");
 
     current_screen_index_ = (current_screen_index_ + 1) % kNumScreens;
-    lvgl_port_lock(portMAX_DELAY);
-        screens_[current_screen_index_]->show();
-    lvgl_port_unlock();
+    load_current_screen();
 }
 
 void AppController::set_reset_timer()
@@ -224,9 +232,7 @@ void AppController::save_data()
     app_storage_.write_stats(&app_state_.today);
     reset_day();
 
-    lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_ui_state(app_state_);
-    lvgl_port_unlock();
+    update_current_screen_ui();
 }
 
 void AppController::increment_count()
@@ -236,9 +242,7 @@ void AppController::increment_count()
     app_state_.today.num_feeds++;
     app_state_.last_feed_time = time(NULL);
 
-    lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_ui_state(app_state_);
-    lvgl_port_unlock();
+    update_current_screen_ui();
 }
 
 void AppController::change_brightness()
@@ -251,9 +255,7 @@ void AppController::change_brightness()
         app_state_.settings.brightness = kBrightnessLow;
     }
     
-    lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_ui_state(app_state_);
-    lvgl_port_unlock();
+    update_current_screen_ui();
     display_set_brightness(app_state_.settings.brightness);
 }
 
@@ -296,9 +298,7 @@ void AppController::change_reset_offset()
 
     app_state_.settings.day_reset_offset = (app_state_.settings.day_reset_offset + 1) % 5;
 
-    lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_ui_state(app_state_);
-    lvgl_port_unlock();
+    update_current_screen_ui();
 
     set_reset_timer();
 }

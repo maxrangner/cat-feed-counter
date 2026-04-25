@@ -33,6 +33,8 @@ class AppController {
 
     static void app_task(void* pvParameters);
     static void reset_day_timer_cb(void* arg);
+    void update_current_screen_ui();
+    void load_current_screen();
     void handle_app_events(app_event_t event);
     void next_screen();
     void set_reset_timer();
