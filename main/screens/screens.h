@@ -1,11 +1,10 @@
 #ifndef SCREENS_H
 #define SCREENS_H
 
-#define NUM_OPTIONS 4
-
 #include <cstdint>
 #include <ctime>
 
+#include "config.h"
 #include "lvgl.h"
 #include "app_types.h"
 
@@ -84,7 +83,7 @@ class OptionsScreen : public Screen {
     options_t option_reset_offset_;
     uint8_t selected_index_ = 0;
     
-    options_t* options_[NUM_OPTIONS] = {
+    options_t* options_[kNumOptions] = {
         &option_brightness_,
         &option_feed_interval_,
         &option_screen_orientation_,

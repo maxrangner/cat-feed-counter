@@ -6,19 +6,6 @@
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
 
-#define PIN_NUM_MOSI 6
-#define PIN_NUM_CLK  7
-#define PIN_NUM_CS   14
-#define PIN_NUM_DC   15
-#define PIN_NUM_RST  21
-#define PIN_NUM_BL   22
-
-#define LCD_H_RES    172
-#define LCD_V_RES    320
-#define LCD_BUF_SIZE (LCD_H_RES * 80)
-#define DISPLAY_SPI_PIXEL_CLOCK_HZ (40 * 1000 * 1000) 
-#define BACKLIGHT_MAX_DUTY 1023U
-
 void display_init();
 void display_set_brightness(uint8_t percent);
 void display_set_rotation(lv_display_rotation_t rotation);

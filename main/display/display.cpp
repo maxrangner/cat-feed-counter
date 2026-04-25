@@ -19,12 +19,12 @@ static void display_spi_init()
 {
     spi_bus_config_t buscfg = {};
 
-    buscfg.mosi_io_num    = PIN_NUM_MOSI;
+    buscfg.mosi_io_num    = kPinNumMosi;
     buscfg.miso_io_num    = -1;
-    buscfg.sclk_io_num    = PIN_NUM_CLK;
+    buscfg.sclk_io_num    = kPinNumClk;
     buscfg.quadwp_io_num  = -1;
     buscfg.quadhd_io_num  = -1;
-    buscfg.max_transfer_sz = LCD_BUF_SIZE * 2;
+    buscfg.max_transfer_sz = kLcdBufSize * 2;
 
     ESP_ERROR_CHECK(
         spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO)
@@ -35,9 +35,9 @@ static void display_io_init()
 {
     esp_lcd_panel_io_spi_config_t io_config = {};
 
-    io_config.dc_gpio_num       = PIN_NUM_DC;
-    io_config.cs_gpio_num       = PIN_NUM_CS;
-    io_config.pclk_hz           = DISPLAY_SPI_PIXEL_CLOCK_HZ;
+    io_config.dc_gpio_num       = kPinNumDc;
+    io_config.cs_gpio_num       = kPinNumCs;
+    io_config.pclk_hz           = kDisplaySpiPixelClockHz;
     io_config.spi_mode          = 0;
     io_config.trans_queue_depth = 10;
     io_config.lcd_cmd_bits      = 8;
@@ -52,7 +52,7 @@ static void display_panel_init(void)
 {
     esp_lcd_panel_dev_config_t panel_config = {};
 
-    panel_config.reset_gpio_num = PIN_NUM_RST;
+    panel_config.reset_gpio_num = kPinNumRst;
     panel_config.color_space    = ESP_LCD_COLOR_SPACE_RGB;
     panel_config.bits_per_pixel = 16;
 
@@ -66,10 +66,10 @@ static void display_panel_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 34, 0));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
 
-    static uint16_t line[LCD_H_RES];
+    static uint16_t line[kLcdHRes];
     memset(line, 0xFF, sizeof(line));
-    for (int y = 0; y < LCD_V_RES; y++) {
-        ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(panel_handle, 0, y, LCD_H_RES, y + 1, line));
+    for (int y = 0; y < kLcdVRes; y++) {
+        ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(panel_handle, 0, y, kLcdHRes, y + 1, line));
     }
 
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
@@ -87,7 +87,7 @@ static void display_backlight_init()
     ESP_ERROR_CHECK(ledc_timer_config(&timer_config));
 
     ledc_channel_config_t channel_config = {};
-    channel_config.gpio_num = PIN_NUM_BL;
+    channel_config.gpio_num = kPinNumBl;
     channel_config.speed_mode = LEDC_LOW_SPEED_MODE;
     channel_config.channel = LEDC_CHANNEL_0;
     channel_config.intr_type = LEDC_INTR_DISABLE;
@@ -109,10 +109,10 @@ static void display_lvgl_init()
 
     disp_cfg.io_handle     = io_handle;
     disp_cfg.panel_handle  = panel_handle;
-    disp_cfg.buffer_size   = LCD_BUF_SIZE;
+    disp_cfg.buffer_size   = kLcdBufSize;
     disp_cfg.double_buffer = false;
-    disp_cfg.hres          = LCD_H_RES;
-    disp_cfg.vres          = LCD_V_RES;
+    disp_cfg.hres          = kLcdHRes;
+    disp_cfg.vres          = kLcdVRes;
     disp_cfg.color_format  = LV_COLOR_FORMAT_RGB565;
     disp_cfg.rotation.mirror_x = false;
     disp_cfg.rotation.mirror_y = false;
@@ -130,7 +130,7 @@ void display_set_brightness(uint8_t percent)
 {
     if (percent > 100) percent = 100;
 
-    uint32_t duty = (BACKLIGHT_MAX_DUTY * percent) / 100U;
+    uint32_t duty = (kBacklightMaxDuty * percent) / 100U;
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty));
     ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
 }

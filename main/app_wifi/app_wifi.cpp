@@ -103,7 +103,7 @@ void AppWifi::snpt_task(void* pvParameters)
         printf("Failed to update system time within 10s timeout");
     }
     
-    setenv("TZ", APP_TIMEZONE, 1);
+    setenv("TZ", kAppTimezone, 1);
     tzset();
 
     xQueueSend(self->app_queue_, &package, 0);

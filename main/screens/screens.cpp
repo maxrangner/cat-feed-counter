@@ -236,7 +236,7 @@ void OptionsScreen::show()
 
 void OptionsScreen::update()
 {
-    for (uint8_t i = 0; i < NUM_OPTIONS; i++) {
+    for (uint8_t i = 0; i < kNumOptions; i++) {
         if (i == selected_index_) {
             lv_obj_set_style_text_color(options_[i]->label, lv_palette_main(LV_PALETTE_RED), 0);
         } else {
@@ -262,7 +262,7 @@ ScreenAction OptionsScreen::primary_action()
 
 ScreenAction OptionsScreen::secondary_action()
 {
-    uint8_t index = (++selected_index_) % NUM_OPTIONS;
+    uint8_t index = (++selected_index_) % kNumOptions;
     selected_index_ = index;
     update();
     return ScreenAction::NONE;

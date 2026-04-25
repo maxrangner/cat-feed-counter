@@ -28,7 +28,7 @@ class AppController {
     MainScreen main_screen_;
     OptionsScreen options_screen_;
     StatsScreen stats_screen_;
-    Screen* screens_[NUM_SCREENS] = {&main_screen_, &options_screen_, &stats_screen_};
+    Screen* screens_[kNumScreens] = {&main_screen_, &options_screen_, &stats_screen_};
     uint8_t current_screen_index_;
 
     static void app_task(void* pvParameters);

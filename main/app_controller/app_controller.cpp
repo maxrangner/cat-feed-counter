@@ -42,7 +42,7 @@ void AppController::init()
     button_service_init();
 
     app_state_.settings = {
-        .brightness = BRIGHTNESS_MEDIUM,
+        .brightness = kBrightnessMedium,
         .half_feed_steps = false,
         .feed_interval = 1,
         .display_rotation = LV_DISPLAY_ROTATION_180,
@@ -87,7 +87,7 @@ void AppController::init()
     );
 
     button_cfg_t btn_main_cfg = {
-        .gpio_num = BTN_MAIN_PIN,
+        .gpio_num = kBtnMainPin,
         .hasPullup = true,
         .debounce = 25,
         .long_press_dur = 500,
@@ -97,7 +97,7 @@ void AppController::init()
     button_init(&btn_main_cfg, &btn_main_);
 
     button_cfg_t btn_side_cfg = {
-        .gpio_num = BTN_SIDE_PIN,
+        .gpio_num = kBtnSidePin,
         .hasPullup = true,
         .debounce = 25,
         .long_press_dur = 500,
@@ -174,7 +174,7 @@ void AppController::next_screen()
 {
     ESP_LOGI(TAG, "next_screen()");
 
-    current_screen_index_ = (current_screen_index_ + 1) % NUM_SCREENS;
+    current_screen_index_ = (current_screen_index_ + 1) % kNumScreens;
     lvgl_port_lock(portMAX_DELAY);
         screens_[current_screen_index_]->show();
     lvgl_port_unlock();
@@ -245,10 +245,10 @@ void AppController::change_brightness()
 {
     ESP_LOGI(TAG, "change_brightness()");
 
-    if (app_state_.settings.brightness == BRIGHTNESS_LOW) {
-        app_state_.settings.brightness = BRIGHTNESS_HIGH;
+    if (app_state_.settings.brightness == kBrightnessLow) {
+        app_state_.settings.brightness = kBrightnessHigh;
     } else {
-        app_state_.settings.brightness = BRIGHTNESS_LOW;
+        app_state_.settings.brightness = kBrightnessLow;
     }
     
     lvgl_port_lock(portMAX_DELAY);
@@ -311,11 +311,11 @@ void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data)
     app_event_t event = {};
     event.msg_event = AppEventType::NONE;
 
-    if (gpio_num == BTN_MAIN_PIN) {
+    if (gpio_num == kBtnMainPin) {
         if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_MAIN_SHORT_PRESS;
         if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_MAIN_LONG_PRESS;
     }
-    if (gpio_num == BTN_SIDE_PIN) {
+    if (gpio_num == kBtnSidePin) {
         if (btn_event == BTN_SHORT_PRESS) event.msg_event = AppEventType::BTN_SIDE_SHORT_PRESS;
         if (btn_event == BTN_LONG_PRESS) event.msg_event = AppEventType::BTN_SIDE_LONG_PRESS;
     }
