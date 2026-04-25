@@ -1,8 +1,5 @@
 #include "app_controller.h"
 
-#define BTN_MAIN_PIN 3
-#define BTN_SIDE_PIN 9
-
 #include <ctime>
 #include <inttypes.h>
 #include "lvgl.h"
@@ -51,11 +48,12 @@ void AppController::init()
         .display_rotation = LV_DISPLAY_ROTATION_180,
         .day_reset_offset = 3,
     };
-    app_state_.current_screen = screens[0];
     app_state_.timer_running = false;
     app_state_.stats.tot_num_feeds = 0;
     app_state_.today.num_feeds = 0;
     app_state_.last_feed_time = 0;
+
+    current_screen_index_ = 0;
 
     lvgl_port_lock(portMAX_DELAY);
         display_set_rotation(app_state_.settings.display_rotation);
@@ -122,7 +120,7 @@ void AppController::app_task(void* pvParameters)
 
     lvgl_port_lock(portMAX_DELAY);
         self->main_screen_.update_ui_state(self->app_state_);
-        self->app_state_.current_screen->show();
+        self->screens_[self->current_screen_index_]->show();
     lvgl_port_unlock();
 
     display_set_brightness(self->app_state_.settings.brightness);
@@ -132,7 +130,7 @@ void AppController::app_task(void* pvParameters)
             self->handle_app_events(event);
         }
         lvgl_port_lock(portMAX_DELAY);
-            self->app_state_.current_screen->update_ui_state(self->app_state_);
+            self->screens_[self->current_screen_index_]->update_ui_state(self->app_state_);
         lvgl_port_unlock();
     }
 }
@@ -142,9 +140,9 @@ void AppController::handle_app_events(app_event_t event)
     ScreenAction action = ScreenAction::NONE;
 
     switch (event.msg_event) {
-        case AppEventType::BTN_MAIN_SHORT_PRESS: action = app_state_.current_screen->primary_action(); break;
+        case AppEventType::BTN_MAIN_SHORT_PRESS: action = screens_[current_screen_index_]->primary_action(); break;
         case AppEventType::BTN_MAIN_LONG_PRESS: next_screen(); break;
-        case AppEventType::BTN_SIDE_SHORT_PRESS: action = app_state_.current_screen->secondary_action(); break;
+        case AppEventType::BTN_SIDE_SHORT_PRESS: action = screens_[current_screen_index_]->secondary_action(); break;
         case AppEventType::BTN_SIDE_LONG_PRESS: ESP_LOGI(TAG, "BTN_SIDE_LONG_PRESS"); break;
         case AppEventType::TIME_SYNCED: set_reset_timer(); break;
         case AppEventType::RESET_DAY: reset_day(); break;
@@ -176,12 +174,9 @@ void AppController::next_screen()
 {
     ESP_LOGI(TAG, "next_screen()");
 
-    static uint8_t index = 0;
-    index = (index + 1) % NUM_SCREENS;
-    app_state_.current_screen = screens[index];
+    current_screen_index_ = (current_screen_index_ + 1) % NUM_SCREENS;
     lvgl_port_lock(portMAX_DELAY);
-        app_state_.current_screen->update_ui_state(app_state_);
-        app_state_.current_screen->show();
+        screens_[current_screen_index_]->show();
     lvgl_port_unlock();
 }
 

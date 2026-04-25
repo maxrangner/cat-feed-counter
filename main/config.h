@@ -7,4 +7,9 @@
 #define ONE_DAY_US 86400000000ULL
 #define APP_TIMEZONE "CET-1CEST,M3.5.0/2,M10.5.0/3"
 
+#define NUM_SCREENS 3
+
+#define BTN_MAIN_PIN 3
+#define BTN_SIDE_PIN 9
+
 #endif

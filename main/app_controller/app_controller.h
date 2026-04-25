@@ -1,14 +1,13 @@
 #ifndef APP_CONTROLLER_H
 #define APP_CONTROLLER_H
 
-#define NUM_SCREENS 3
-
 #include <cstdint>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
 
+#include "config.h"
 #include "app_types.h"
 #include "screens.h"
 #include "button_driver.h"
@@ -29,7 +28,8 @@ class AppController {
     MainScreen main_screen_;
     OptionsScreen options_screen_;
     StatsScreen stats_screen_;
-    Screen* screens[NUM_SCREENS] = {&main_screen_, &options_screen_, &stats_screen_};
+    Screen* screens_[NUM_SCREENS] = {&main_screen_, &options_screen_, &stats_screen_};
+    uint8_t current_screen_index_;
 
     static void app_task(void* pvParameters);
     static void reset_day_timer_cb(void* arg);

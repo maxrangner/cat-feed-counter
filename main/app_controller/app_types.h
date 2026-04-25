@@ -44,7 +44,6 @@ typedef struct {
 
 typedef struct {
     settings_t settings;
-    Screen* current_screen;
     bool timer_running;
     stats_t stats;
     day_data_t today;
