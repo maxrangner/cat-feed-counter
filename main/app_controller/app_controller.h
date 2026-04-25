@@ -10,6 +10,7 @@
 #include "config.h"
 #include "app_types.h"
 #include "screens.h"
+#include "app_wifi.h"
 #include "button_driver.h"
 #include "app_storage.h"
 
@@ -33,6 +34,7 @@ class AppController {
 
     static void app_task(void* pvParameters);
     static void reset_day_timer_cb(void* arg);
+    bool save_today_to_flash();
     void update_current_screen_ui();
     void load_current_screen();
     void handle_app_events(app_event_t event);

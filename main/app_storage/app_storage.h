@@ -12,7 +12,9 @@ class AppStorage {
 public:
     AppStorage();
     void init();
-    esp_err_t write_stats(day_data_t* data);
+    void load_settings(settings_t* settings);
+    void save_settings(const settings_t* settings);
+    esp_err_t write_stats(const day_data_t* data);
     esp_err_t load_stats(stats_t* stats);
 };
 

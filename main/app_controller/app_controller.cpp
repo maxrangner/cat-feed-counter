@@ -3,7 +3,6 @@
 #include <ctime>
 #include <inttypes.h>
 #include "lvgl.h"
-#include "nvs_flash.h"
 #include "esp_log.h"
 #include "esp_pm.h"
 
@@ -14,6 +13,49 @@
 static const char *TAG = "app_controller";
 static void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data);
 
+static settings_t default_settings()
+{
+    settings_t settings = {
+        .brightness = kBrightnessMedium,
+        .half_feed_steps = false,
+        .feed_interval = 1,
+        .display_rotation = LV_DISPLAY_ROTATION_180,
+        .day_reset_offset = 3,
+    };
+
+    return settings;
+}
+
+static void clamp_settings(settings_t* settings)
+{
+    if (
+        settings->brightness != kBrightnessLow &&
+        settings->brightness != kBrightnessMedium &&
+        settings->brightness != kBrightnessHigh
+    ) {
+        settings->brightness = kBrightnessMedium;
+    }
+
+    if (settings->feed_interval < 1 || settings->feed_interval > 9) {
+        settings->feed_interval = 1;
+    }
+
+    switch (settings->display_rotation) {
+        case LV_DISPLAY_ROTATION_0:
+        case LV_DISPLAY_ROTATION_90:
+        case LV_DISPLAY_ROTATION_180:
+        case LV_DISPLAY_ROTATION_270:
+            break;
+        default:
+            settings->display_rotation = LV_DISPLAY_ROTATION_180;
+            break;
+    }
+
+    if (settings->day_reset_offset > 4) {
+        settings->day_reset_offset = 3;
+    }
+}
+
 void AppController::reset_day_timer_cb(void* arg)
 {
     auto* self = static_cast<AppController*>(arg);
@@ -23,17 +65,18 @@ void AppController::reset_day_timer_cb(void* arg)
     xQueueSend(self->in_queue_, &event, 0);
 }
 
-static void nvs_init()
-{
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-}
-
 AppController::AppController() {}
+
+bool AppController::save_today_to_flash()
+{
+    if (app_storage_.write_stats(&app_state_.today) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save current day to flash");
+        return false;
+    }
+
+    app_state_.stats.tot_num_feeds += app_state_.today.num_feeds;
+    return true;
+}
 
 void AppController::update_current_screen_ui()
 {
@@ -52,16 +95,12 @@ void AppController::load_current_screen()
 void AppController::init()
 {
     display_init();
-    nvs_init();
     button_service_init();
+    app_storage_.init();
 
-    app_state_.settings = {
-        .brightness = kBrightnessMedium,
-        .half_feed_steps = false,
-        .feed_interval = 1,
-        .display_rotation = LV_DISPLAY_ROTATION_180,
-        .day_reset_offset = 3,
-    };
+    app_state_.settings = default_settings();
+    app_storage_.load_settings(&app_state_.settings);
+    clamp_settings(&app_state_.settings);
     app_state_.timer_running = false;
     app_state_.stats.tot_num_feeds = 0;
     app_state_.today.num_feeds = 0;
@@ -127,7 +166,6 @@ void AppController::app_task(void* pvParameters)
 
     self->app_wifi_.init(self->getAppQueue());
     self->app_wifi_.sync_time();
-    self->app_storage_.init();
     self->app_storage_.load_stats(&self->app_state_.stats);
 
     app_event_t event = {};
@@ -221,7 +259,12 @@ void AppController::reset_day()
     ESP_LOGI(TAG, "reset_day()");
     
     app_state_.timer_running = false;
-    app_state_.today.num_feeds = 0;
+
+    if (save_today_to_flash()) {
+        app_state_.today.num_feeds = 0;
+        app_state_.last_feed_time = 0;
+    }
+
     set_reset_timer(); 
 }
 
@@ -229,7 +272,6 @@ void AppController::save_data()
 {
     ESP_LOGI(TAG, "save_data()");
 
-    app_storage_.write_stats(&app_state_.today);
     reset_day();
 
     update_current_screen_ui();
@@ -257,6 +299,7 @@ void AppController::change_brightness()
     
     update_current_screen_ui();
     display_set_brightness(app_state_.settings.brightness);
+    app_storage_.save_settings(&app_state_.settings);
 }
 
 void AppController::increment_feed_interval()
@@ -272,6 +315,7 @@ void AppController::increment_feed_interval()
         main_screen_.update_ui_state(app_state_);
         options_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
+    app_storage_.save_settings(&app_state_.settings);
 }
 
 void AppController::rotate_display()
@@ -290,6 +334,7 @@ void AppController::rotate_display()
         options_screen_.update_ui_state(app_state_);
         display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
+    app_storage_.save_settings(&app_state_.settings);
 }
 
 void AppController::change_reset_offset()
@@ -301,6 +346,7 @@ void AppController::change_reset_offset()
     update_current_screen_ui();
 
     set_reset_timer();
+    app_storage_.save_settings(&app_state_.settings);
 }
 
 void btn_cb(button_event_t btn_event, uint8_t gpio_num, void* user_data)

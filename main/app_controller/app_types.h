@@ -3,11 +3,7 @@
 
 #include <ctime>
 
-#include "app_wifi.h"
-
 #include "lvgl.h"
-
-class Screen;
 
 enum class AppEventType {
     NONE,
@@ -21,9 +17,6 @@ enum class AppEventType {
 
 typedef struct {
     AppEventType msg_event;
-    union {
-        WifiState wifi_state;
-    };
 } app_event_t;
 
 typedef struct {
