@@ -125,9 +125,6 @@ void AppController::init()
         main_screen_.init();
         options_screen_.init();
         stats_screen_.init();
-        main_screen_.update_ui_state(app_state_);
-        options_screen_.update_ui_state(app_state_);
-        stats_screen_.update_ui_state(app_state_);
     lvgl_port_unlock();
 
     xTaskCreate(
@@ -170,8 +167,8 @@ void AppController::app_task(void* pvParameters)
 
     app_event_t event = {};
 
-    self->update_current_screen_ui();
     self->load_current_screen();
+    self->update_current_screen_ui();
 
     display_set_brightness(self->app_state_.settings.brightness);
 
@@ -199,7 +196,6 @@ void AppController::handle_app_events(app_event_t event)
 
     switch (action) {
         case ScreenAction::INCREMENT_FEEDS: increment_count(); break;
-        case ScreenAction::SAVE_DATA: save_data(); break;
         case ScreenAction::CHANGE_BRIGHTNESS: change_brightness(); break;
         case ScreenAction::INCREMENT_FEED_INTERVAL: increment_feed_interval(); break;
         case ScreenAction::ROTATE_DISPLAY: rotate_display(); break;
@@ -224,6 +220,7 @@ void AppController::next_screen()
 
     current_screen_index_ = (current_screen_index_ + 1) % kNumScreens;
     load_current_screen();
+    update_current_screen_ui();
 }
 
 void AppController::set_reset_timer()
@@ -268,15 +265,6 @@ void AppController::reset_day()
     set_reset_timer(); 
 }
 
-void AppController::save_data()
-{
-    ESP_LOGI(TAG, "save_data()");
-
-    reset_day();
-
-    update_current_screen_ui();
-}
-
 void AppController::increment_count()
 {
     ESP_LOGI(TAG, "increment_count()");
@@ -292,6 +280,8 @@ void AppController::change_brightness()
     ESP_LOGI(TAG, "change_brightness()");
 
     if (app_state_.settings.brightness == kBrightnessLow) {
+        app_state_.settings.brightness = kBrightnessMedium;
+    } else if (app_state_.settings.brightness == kBrightnessMedium) {
         app_state_.settings.brightness = kBrightnessHigh;
     } else {
         app_state_.settings.brightness = kBrightnessLow;
@@ -311,10 +301,7 @@ void AppController::increment_feed_interval()
         app_state_.settings.feed_interval = 1;
     }
 
-    lvgl_port_lock(portMAX_DELAY);
-        main_screen_.update_ui_state(app_state_);
-        options_screen_.update_ui_state(app_state_);
-    lvgl_port_unlock();
+    update_current_screen_ui();
     app_storage_.save_settings(&app_state_.settings);
 }
 
@@ -331,9 +318,9 @@ void AppController::rotate_display()
     }
 
     lvgl_port_lock(portMAX_DELAY);
-        options_screen_.update_ui_state(app_state_);
         display_set_rotation(app_state_.settings.display_rotation);
     lvgl_port_unlock();
+    update_current_screen_ui();
     app_storage_.save_settings(&app_state_.settings);
 }
 

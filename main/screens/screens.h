@@ -11,7 +11,6 @@
 enum class ScreenAction {
     NONE,
     INCREMENT_FEEDS,
-    SAVE_DATA,
     CHANGE_BRIGHTNESS,
     INCREMENT_FEED_INTERVAL,
     ROTATE_DISPLAY,

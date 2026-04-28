@@ -41,7 +41,6 @@ class AppController {
     void next_screen();
     void set_reset_timer();
     void increment_count();
-    void save_data();
     void change_brightness();
     void increment_feed_interval();
     void rotate_display();
