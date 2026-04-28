@@ -49,7 +49,7 @@ public:
     AppController();
     void init();
     void post_event(app_event_t event);
-    QueueHandle_t getAppQueue();
+    QueueHandle_t get_app_queue();
     void reset_day();
 };
 

@@ -161,7 +161,7 @@ void AppController::app_task(void* pvParameters)
 {
     auto* self = static_cast<AppController*>(pvParameters);
 
-    self->app_wifi_.init(self->getAppQueue());
+    self->app_wifi_.init(self->get_app_queue());
     self->app_wifi_.sync_time();
     self->app_storage_.load_stats(&self->app_state_.stats);
 
@@ -209,7 +209,7 @@ void AppController::post_event(app_event_t event)
     xQueueSend(in_queue_, &event, 0);
 }
 
-QueueHandle_t AppController::getAppQueue()
+QueueHandle_t AppController::get_app_queue()
 {
     return in_queue_;
 }

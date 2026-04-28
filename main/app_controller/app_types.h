@@ -15,32 +15,32 @@ enum class AppEventType {
     RESET_DAY,
 };
 
-typedef struct {
+struct app_event_t {
     AppEventType msg_event;
-} app_event_t;
+};
 
-typedef struct {
+struct settings_t {
     uint8_t brightness;
     bool half_feed_steps;
     uint8_t feed_interval;
     lv_display_rotation_t display_rotation;
     uint8_t day_reset_offset;
-} settings_t;
+};
 
-typedef struct {
+struct day_data_t {
     uint32_t num_feeds;
-} day_data_t;
+};
 
-typedef struct {
+struct stats_t {
     uint32_t tot_num_feeds;
-} stats_t;
+};
 
-typedef struct {
+struct app_state_t {
     settings_t settings;
     bool timer_running;
     stats_t stats;
     day_data_t today;
     time_t last_feed_time;
-} app_state_t;
+};
 
 #endif

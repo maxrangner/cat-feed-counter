@@ -10,6 +10,6 @@ extern "C" void app_main(void)
 
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY));
+        vTaskDelay(portMAX_DELAY);
     }
 }
