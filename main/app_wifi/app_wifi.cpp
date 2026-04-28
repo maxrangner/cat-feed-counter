@@ -59,25 +59,18 @@ void AppWifi::wifi_event_cb(void* arg, esp_event_base_t event_base, int32_t even
 
     if (event_base == WIFI_EVENT) {
         if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-            /*
-            Trigger reconnect or port event: time_sync_failed
-
-            app_event_t packet;
-            packet.msg_event = AppEventType::TIME_SYNCED;
-
-            timer = xTimerCreate(
-                "btn_timer",
-                pdMS_TO_TICKS(cfg->debounce),
-                pdFALSE,
-                button_handle,
-                button_timer_cb
-            );
-            xQueueSend(self->app_queue_, &packet, 0);
-            */
+            if (self->reconnect_attempts_ < kMaxReconnectAttempts) {
+                self->reconnect_attempts_++;
+                ESP_LOGI(TAG, "WiFi disconnected, reconnect attempt %d/%d", self->reconnect_attempts_, kMaxReconnectAttempts);
+                esp_wifi_connect();
+            } else {
+                ESP_LOGW(TAG, "WiFi reconnect failed after %d attempts, giving up", kMaxReconnectAttempts);
+            }
         }
     }
     else if (event_base == IP_EVENT) {
         if (event_id == IP_EVENT_STA_GOT_IP) {
+            self->reconnect_attempts_ = 0;
             xTaskCreate(
                 snpt_task,
                 "snptTask",

@@ -9,6 +9,8 @@ constexpr uint8_t kBrightnessHigh = 30;
 constexpr uint64_t kOneDayUs = 86400000000ULL;
 constexpr char kAppTimezone[] = "CET-1CEST,M3.5.0/2,M10.5.0/3";
 
+constexpr uint8_t kMaxReconnectAttempts = 3;
+
 constexpr uint8_t kNumScreens = 3;
 constexpr uint8_t kNumOptions = 4;
 

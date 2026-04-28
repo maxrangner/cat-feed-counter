@@ -8,6 +8,7 @@
 
 class AppWifi {
     QueueHandle_t app_queue_;
+    uint8_t reconnect_attempts_ = 0;
     static void wifi_event_cb(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
     static void snpt_task(void* pvParameters);
 public:
